@@ -3,9 +3,43 @@ function el(tag,cls,txt){let x=document.createElement(tag);if(cls)x.className=cl
 async function api(path,data){let r=await fetch('/api/'+path,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});let j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Ошибка '+r.status);return j}
 function timer(){if(!info)return;let now=Date.now();if(!info.start){$('timer').textContent='Скоро начало голосования';return}let target=now<info.start?info.start:info.end;if(now>=info.end){$('timer').textContent='Голосование завершено';return}let ms=Math.max(0,target-now),d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60,s=Math.floor(ms/1000)%60;$('timer').textContent=(now<info.start?'До начала: ':'До конца: ')+d+'д '+[h,m,s].map(x=>String(x).padStart(2,'0')).join(':')}
 async function init(){info=await api('info');myVotes=info.user?await api('my-votes').catch(()=>[]):[];$('account').textContent=info.user?info.user.name+' · Выйти':'Войти ↗︎';renderCategories();timer();if(active){let c=info.nominees.find(x=>x.id===active);if(c)show(c,false)}}
-const symbols=['✦','♫','▧','▷','◎'];
-function renderCategories(){$('categories').replaceChildren(...info.nominees.map((c,i)=>{let b=el('button','category'),top=el('span','cat-top'),bottom=el('span','cat-bottom');b.type='button';b.setAttribute('aria-expanded',String(active===c.id));top.append(el('span','','0'+(i+1)+' / 05'),el('span','cat-icon',symbols[i]||'✦'));bottom.append(el('span','',myVotes.some(v=>v.category===c.id)?'Голос принят':c.items.length?c.items.length+' ном.':'Скоро'),el('span','cat-arrow','↗︎'));b.append(top,el('strong','',c.name),bottom);b.onclick=()=>{if(active===c.id){active=null;$('detail').hidden=true;renderCategories();return}selection.clear();show(c,true)};return b}))}
-function show(c,scroll){active=c.id;renderCategories();let d=$('detail');d.hidden=false;d.replaceChildren(el('h2','',c.name));const saved=myVotes.find(v=>v.category===c.id);if(!c.items.length){d.append(el('p','empty','Номинанты скоро появятся. Следи за обновлениями!'));if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'});return}
+function renderCategories() {
+  const buttons = info.nominees.map(category => {
+    const button = el('button', 'category');
+    button.type = 'button';
+    button.dataset.category = category.id;
+    button.setAttribute('aria-expanded', String(active === category.id));
+    button.setAttribute('aria-controls', 'detail');
+
+    const art = el('span', 'cover-art');
+    art.setAttribute('aria-hidden', 'true');
+    art.append(el('i', 'shape'));
+    const title = el('strong', '', category.name);
+    const status = myVotes.some(vote => vote.category === category.id)
+      ? 'Голос принят'
+      : category.items.length ? 'Номинантов: ' + category.items.length : 'Скоро';
+    const meta = el('span', 'cat-bottom', status);
+    const arrow = el('span', 'cat-arrow', active === category.id ? '−' : '↘');
+    arrow.setAttribute('aria-hidden', 'true');
+    meta.append(arrow);
+    button.append(art, title, meta);
+    button.onclick = () => {
+      if (active === category.id) {
+        active = null;
+        $('detail').hidden = true;
+        renderCategories();
+      } else {
+        selection.clear();
+        show(category, true);
+      }
+      Array.from($('categories').children)
+        .find(item => item.dataset.category === category.id)?.focus({preventScroll:true});
+    };
+    return button;
+  });
+  $('categories').replaceChildren(...buttons);
+}
+function show(c,scroll){active=c.id;renderCategories();let d=$('detail');d.hidden=false;d.replaceChildren(el('h2','',c.name));const saved=myVotes.find(v=>v.category===c.id);if(!c.items.length){d.append(el('p','empty','Номинанты пока не объявлены.'));if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'});return}
 const isOpen=()=>Date.now()>=info.start&&Date.now()<info.end&&!!info.start;d.append(el('p','muted',saved?'Твой голос уже принят. Изменить выбор нельзя.':isOpen()?'Выбери до трёх номинантов.':'Голосование сейчас закрыто.'));
 let grid=el('div','nominee-grid'),count=el('strong','',''),submit=el('button','primary','Подтвердить голоса'),inputs=[];const refresh=()=>{count.textContent='Выбрано: '+selection.size+' / 3';submit.disabled=!!saved||!isOpen()||selection.size===0;for(let x of inputs)x.disabled=!!saved||!isOpen()||(!x.checked&&selection.size>=3)};
 for(let n of c.items){let card=el('article','nominee'),label=el('label'),check=el('input');check.type='checkbox';check.checked=saved?saved.choices.includes(n.id):selection.has(n.id);check.onchange=()=>{if(check.checked)selection.add(n.id);else selection.delete(n.id);refresh()};inputs.push(check);if(n.image){let im=el('img');im.src=n.image;im.alt=n.name;im.loading='lazy';card.append(im)}label.append(check,el('span','',n.name));card.append(label);if(n.audio){let a=el('audio');a.controls=true;a.preload='none';a.src=n.audio;card.append(a)}grid.append(card)}d.append(grid);
