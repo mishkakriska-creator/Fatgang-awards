@@ -2,22 +2,91 @@
   {
     "id": "artist",
     "name": "Артист года",
-    "items": []
+    "items": [
+      {
+        "id": "alteen",
+        "name": "alteen",
+        "image": "/media/alteen.jpeg"
+      }
+    ]
   },
   {
     "id": "producer",
     "name": "Продюсер года",
-    "items": []
+    "items": [
+      {
+        "id": "nonword",
+        "name": "nonword",
+        "works": [
+          {
+            "name": "alteen — y’all rolling loud we rollin louder",
+            "audio": "/media/rolling-loud.mp3"
+          },
+          {
+            "name": "wyr8th — took yo shi w/iyridescent",
+            "audio": "/media/took-yo-shi.mp3"
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "cover",
     "name": "Обложка года",
-    "items": []
+    "items": [
+      {
+        "id": "magical-girl",
+        "name": "Magical Girl Apocalypse",
+        "image": "/media/magical-girl.jpeg"
+      },
+      {
+        "id": "drawing",
+        "name": "Рисунок на розовом фоне",
+        "image": "/media/drawing.jpeg"
+      }
+    ]
   },
   {
     "id": "track",
     "name": "Трек года",
-    "items": []
+    "items": [
+      {
+        "id": "rolling-loud",
+        "name": "y’all rolling loud we rollin louder",
+        "artist": "alteen",
+        "audio": "/media/rolling-loud.mp3"
+      },
+      {
+        "id": "hahaha",
+        "name": "hahaha",
+        "artist": "alteen",
+        "audio": "/media/hahaha.mp3"
+      },
+      {
+        "id": "take-care",
+        "name": "I can’t take care",
+        "artist": "alteen",
+        "audio": "/media/take-care.mp3"
+      },
+      {
+        "id": "danganronpa",
+        "name": "danganronpa ダンガンロンパ",
+        "artist": "deltaaa feat. yumixx",
+        "audio": "/media/danganronpa.mp3"
+      },
+      {
+        "id": "autotune",
+        "name": "автотюн xdddddd",
+        "artist": "deltaaa",
+        "audio": "/media/autotune.mp3"
+      },
+      {
+        "id": "chuzhoy-stsenariy",
+        "name": "чужой сценарий",
+        "artist": "deltaaa",
+        "audio": "/media/chuzhoy-stsenariy.mp3"
+      }
+    ]
   },
   {
     "id": "album",

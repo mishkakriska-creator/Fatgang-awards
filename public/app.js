@@ -40,11 +40,26 @@ function renderCategories() {
   });
   $('categories').replaceChildren(...buttons);
 }
+function audioPlayer(src, title) {
+  const player = el('audio');
+  player.controls = true;
+  player.preload = 'none';
+  player.src = src;
+  player.setAttribute('aria-label', title);
+  return player;
+}
 function show(c,scroll){active=c.id;renderCategories();let d=$('detail');d.hidden=false;d.replaceChildren(el('h2','',c.name));const saved=myVotes.find(v=>v.category===c.id);if(!c.items.length){d.append(el('p','empty','Номинанты пока не объявлены.'));if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'});return}
 const usedHere=info.usedCategories?.includes(c.id);
 const isOpen=()=>Date.now()>=info.start&&Date.now()<info.end&&!!info.start;d.append(el('p','muted',saved?'Твой голос уже принят. Изменить выбор нельзя.':usedHere?'С этого браузера уже голосовали в этой номинации.':isOpen()&&!info.user?'Войди в аккаунт, чтобы выбрать номинантов.':isOpen()?'Выбери до трёх номинантов.':'Голосование сейчас закрыто.'));
 let grid=el('div','nominee-grid'),count=el('strong','',''),submit=el('button','primary','Подтвердить голоса'),inputs=[];const refresh=()=>{count.textContent='Выбрано: '+selection.size+' / 3';submit.disabled=!info.user||!!saved||usedHere||!isOpen()||selection.size===0;for(let x of inputs)x.disabled=!info.user||!!saved||usedHere||!isOpen()||(!x.checked&&selection.size>=3)};
-for(let n of c.items){let card=el('article','nominee'),label=el('label'),check=el('input');check.type='checkbox';check.checked=saved?saved.choices.includes(n.id):selection.has(n.id);check.onchange=()=>{if(check.checked)selection.add(n.id);else selection.delete(n.id);refresh()};inputs.push(check);if(n.image){let im=el('img');im.src=n.image;im.alt=n.name;im.loading='lazy';card.append(im)}label.append(check,el('span','',n.name));card.append(label);if(n.audio){let a=el('audio');a.controls=true;a.preload='none';a.src=n.audio;card.append(a)}grid.append(card)}d.append(grid);
+for(let n of c.items){let card=el('article','nominee'),label=el('label'),check=el('input');check.type='checkbox';check.checked=saved?saved.choices.includes(n.id):selection.has(n.id);check.onchange=()=>{if(check.checked)selection.add(n.id);else selection.delete(n.id);refresh()};inputs.push(check);if(n.image){let im=el('img');im.src=n.image;im.alt=n.name;im.loading='lazy';card.append(im)}label.append(check,el('span','',n.name));card.append(label);if(n.artist) card.append(el('span','muted',n.artist));
+  if(n.audio) card.append(audioPlayer(n.audio, [n.artist,n.name].filter(Boolean).join(' — ')));
+  for(const work of n.works || []) {
+    card.append(el('span','',work.name),audioPlayer(work.audio,work.name));
+  }
+  grid.append(card);
+}
+d.append(grid);
 if(!info.user && isOpen()){
   const loginButton=el('button','primary','Войти для голосования');
   loginButton.onclick=()=>$('auth').showModal();
