@@ -6,6 +6,7 @@
     "start": "NODE_EXTRA_CA_CERTS=certs/prod-ca-2021.crt node server.js"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "express": "^4.21.2",
     "pg": "^8.13.1",
     "bcryptjs": "^2.4.3",

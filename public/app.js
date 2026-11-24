@@ -1,6 +1,6 @@
 let info=null,active=null,myVotes=[],selection=new Set();const $=id=>document.getElementById(id);
 function el(tag,cls,txt){let x=document.createElement(tag);if(cls)x.className=cls;if(txt!==undefined)x.textContent=txt;return x}
-async function api(path,data){let r=await fetch('/api/'+path,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});let j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Ошибка '+r.status);return j}
+async function api(path,data){let r=await fetch('/api/'+path,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});let j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(Error(j.error||'Ошибка '+r.status),{status:r.status});return j}
 function timer(){if(!info)return;let now=Date.now();if(!info.start){$('timer').textContent='Скоро начало голосования';return}let target=now<info.start?info.start:info.end;if(now>=info.end){$('timer').textContent='Голосование завершено';return}let ms=Math.max(0,target-now),d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60,s=Math.floor(ms/1000)%60;$('timer').textContent=(now<info.start?'До начала: ':'До конца: ')+d+'д '+[h,m,s].map(x=>String(x).padStart(2,'0')).join(':')}
 async function init(){info=await api('info');myVotes=info.user?await api('my-votes').catch(()=>[]):[];$('account').textContent=info.user?info.user.name+' · Выйти':'Войти ↗︎';renderCategories();timer();if(active){let c=info.nominees.find(x=>x.id===active);if(c)show(c,false)}}
 function renderCategories() {
@@ -17,6 +17,7 @@ function renderCategories() {
     const title = el('strong', '', category.name);
     const status = myVotes.some(vote => vote.category === category.id)
       ? 'Голос принят'
+      : info.usedCategories?.includes(category.id) ? 'Здесь уже голосовали'
       : category.items.length ? 'Номинантов: ' + category.items.length : 'Скоро';
     const meta = el('span', 'cat-bottom', status);
     const arrow = el('span', 'cat-arrow', active === category.id ? '−' : '↘');
@@ -40,10 +41,15 @@ function renderCategories() {
   $('categories').replaceChildren(...buttons);
 }
 function show(c,scroll){active=c.id;renderCategories();let d=$('detail');d.hidden=false;d.replaceChildren(el('h2','',c.name));const saved=myVotes.find(v=>v.category===c.id);if(!c.items.length){d.append(el('p','empty','Номинанты пока не объявлены.'));if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'});return}
-const isOpen=()=>Date.now()>=info.start&&Date.now()<info.end&&!!info.start;d.append(el('p','muted',saved?'Твой голос уже принят. Изменить выбор нельзя.':isOpen()?'Выбери до трёх номинантов.':'Голосование сейчас закрыто.'));
-let grid=el('div','nominee-grid'),count=el('strong','',''),submit=el('button','primary','Подтвердить голоса'),inputs=[];const refresh=()=>{count.textContent='Выбрано: '+selection.size+' / 3';submit.disabled=!!saved||!isOpen()||selection.size===0;for(let x of inputs)x.disabled=!!saved||!isOpen()||(!x.checked&&selection.size>=3)};
+const usedHere=info.usedCategories?.includes(c.id);
+const isOpen=()=>Date.now()>=info.start&&Date.now()<info.end&&!!info.start;d.append(el('p','muted',saved?'Твой голос уже принят. Изменить выбор нельзя.':usedHere?'С этого браузера уже голосовали в этой номинации.':isOpen()&&!info.user?'Войди в аккаунт, чтобы выбрать номинантов.':isOpen()?'Выбери до трёх номинантов.':'Голосование сейчас закрыто.'));
+let grid=el('div','nominee-grid'),count=el('strong','',''),submit=el('button','primary','Подтвердить голоса'),inputs=[];const refresh=()=>{count.textContent='Выбрано: '+selection.size+' / 3';submit.disabled=!info.user||!!saved||usedHere||!isOpen()||selection.size===0;for(let x of inputs)x.disabled=!info.user||!!saved||usedHere||!isOpen()||(!x.checked&&selection.size>=3)};
 for(let n of c.items){let card=el('article','nominee'),label=el('label'),check=el('input');check.type='checkbox';check.checked=saved?saved.choices.includes(n.id):selection.has(n.id);check.onchange=()=>{if(check.checked)selection.add(n.id);else selection.delete(n.id);refresh()};inputs.push(check);if(n.image){let im=el('img');im.src=n.image;im.alt=n.name;im.loading='lazy';card.append(im)}label.append(check,el('span','',n.name));card.append(label);if(n.audio){let a=el('audio');a.controls=true;a.preload='none';a.src=n.audio;card.append(a)}grid.append(card)}d.append(grid);
-if(!saved){const actions=el('div','vote-actions');actions.append(count,submit);d.append(actions)}refresh();submit.onclick=async()=>{if(!info.user){$('auth').showModal();return}if(!confirm('Подтвердить выбор? Изменить его будет нельзя.'))return;submit.disabled=true;try{await api('vote',{category:c.id,ids:[...selection]});selection.clear();await init()}catch(e){alert(e.message);refresh()}};if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'})}
+if(!info.user && isOpen()){
+  const loginButton=el('button','primary','Войти для голосования');
+  loginButton.onclick=()=>$('auth').showModal();
+  d.append(loginButton);
+} else if(info.user && !saved && !usedHere){const actions=el('div','vote-actions');actions.append(count,submit);d.append(actions)}refresh();submit.onclick=async()=>{if(!info.user){$('auth').showModal();return}if(!confirm('Подтвердить выбор? Изменить его будет нельзя.'))return;submit.disabled=true;try{await api('vote',{category:c.id,ids:[...selection]});selection.clear();await init()}catch(e){alert(e.message);if(e.status===401||e.status===409){selection.clear();await init()}else refresh()}};if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'})}
 $('account').onclick=async()=>{if(info?.user){if(confirm('Выйти из аккаунта?')){await api('logout',{});selection.clear();await init()}}else $('auth').showModal()};
 $('close-auth').onclick=()=>$('auth').close();$('login').onsubmit=async e=>{e.preventDefault();$('error').textContent='';try{await api(e.submitter?.value||'login',Object.fromEntries(new FormData(e.target)));e.target.reset();$('auth').close();await init()}catch(e){$('error').textContent=e.message}};
 document.addEventListener('play',e=>{if(e.target.tagName==='AUDIO')document.querySelectorAll('audio').forEach(a=>{if(a!==e.target)a.pause()})},true);init().catch(e=>$('timer').textContent=e.message);setInterval(timer,1000);
