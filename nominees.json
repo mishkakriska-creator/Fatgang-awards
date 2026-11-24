@@ -12,6 +12,11 @@
         "id": "deltaaa",
         "name": "deltaaa",
         "image": "/media/deltaaa.jpeg"
+      },
+      {
+        "id": "lobkovye-vshi",
+        "name": "Лобковые Вши",
+        "image": "/media/lv-artist.jpeg"
       }
     ]
   },
@@ -52,6 +57,20 @@
         "image": "/media/drawing.jpeg",
         "artist": "alteen",
         "audio": "/media/take-care.mp3"
+      },
+      {
+        "id": "lv-lyrical-hero",
+        "name": "Когда лирический герой уебок",
+        "artist": "Лобковые Вши",
+        "image": "/media/lv-lyrical-hero.jpg",
+        "url": "https://soundcloud.com/popkabegemotika/sets/kogda-liricheskij-geroj-uebok"
+      },
+      {
+        "id": "lv-yapodrochil",
+        "name": "яподрочилИполучилосьэто",
+        "artist": "Лобковые Вши",
+        "image": "/media/lv-yapodrochil.jpg",
+        "url": "https://soundcloud.com/popkabegemotika/sets/yapodrochilipoluchiloseto"
       }
     ]
   },
@@ -100,6 +119,27 @@
         "artist": "deltaaa",
         "audio": "/media/chuzhoy-stsenariy.mp3",
         "image": "/media/chuzhoy-stsenariy-cover.jpg"
+      },
+      {
+        "id": "lv-antokha",
+        "name": "Антоха",
+        "artist": "Лобковые Вши",
+        "image": "/media/lv-antokha.jpg",
+        "audio": "/media/lv-antokha.mp3"
+      },
+      {
+        "id": "lv-bez-nazvaniya",
+        "name": "Без названия неизвестный",
+        "artist": "Лобковые Вши",
+        "image": "/media/lv-bez-nazvaniya.jpg",
+        "audio": "/media/lv-bez-nazvaniya.mp3"
+      },
+      {
+        "id": "lv-amfitamefedronokain",
+        "name": "Амфитамефедронокаин",
+        "artist": "Лобковые Вши",
+        "image": "/media/lv-amfitamefedronokain.jpg",
+        "audio": "/media/lv-amfitamefedronokain.mp3"
       }
     ]
   },
@@ -120,6 +160,13 @@
         "artist": "alteen",
         "image": "/media/wish-album.jpg",
         "url": "https://soundcloud.com/alteen/sets/wish"
+      },
+      {
+        "id": "lv-dirty-songs",
+        "name": "очень грязные-весёлые песни pt.1",
+        "artist": "Лобковые Вши",
+        "image": "/media/lv-dirty-songs.jpg",
+        "url": "https://soundcloud.com/popkabegemotika/sets/ochen-gryaznye-vesyolye-pesni-pt1"
       }
     ]
   }
