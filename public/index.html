@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#161619">
   <title>FatGang Awards 2026</title>
   <link rel="icon" href="/logo.webp">
-  <link rel="stylesheet" href="/style.css?v=6">
+  <link rel="stylesheet" href="/style.css?v=7">
 </head>
 <body>
 <header class="top">
@@ -45,6 +45,13 @@
   </form>
 </dialog>
 <footer><a class="brand" href="/">FatGang Awards</a><span>2026</span></footer>
-<script src="/app.js?v=8"></script>
+<section class="deck" id="deck" aria-label="Аудиоплеер" hidden>
+  <audio id="song" preload="metadata"></audio>
+  <img id="deck-cover" alt="">
+  <div class="deck-info"><strong id="deck-title"></strong><span id="deck-artist"></span><span id="deck-error" role="status"></span></div>
+  <button type="button" class="transport" id="deck-toggle" aria-label="Воспроизвести"></button>
+  <div class="timeline"><time id="elapsed">0:00</time><input id="seek" type="range" min="0" max="0" step="0.1" value="0" disabled aria-label="Позиция трека"><time id="duration">–:––</time></div>
+</section>
+<script src="/app.js?v=9"></script>
 </body>
 </html>

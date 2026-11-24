@@ -40,22 +40,104 @@ function renderCategories() {
   });
   $('categories').replaceChildren(...buttons);
 }
-function audioPlayer(src, title) {
-  const player = el('audio');
-  player.controls = true;
-  player.preload = 'none';
-  player.src = src;
-  player.setAttribute('aria-label', title);
-  return player;
+const song = $('song');
+let currentTrack = null;
+const seek = $('seek');
+function clock(seconds) {
+  const value = Math.floor(seconds);
+  return Math.floor(value / 60) + ':' + String(value % 60).padStart(2, '0');
 }
-function show(c,scroll){active=c.id;renderCategories();let d=$('detail');d.hidden=false;d.replaceChildren(el('h2','',c.name));const saved=myVotes.find(v=>v.category===c.id);if(!c.items.length){d.append(el('p','empty','Номинанты пока не объявлены.'));if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'});return}
+function updateTimeline() {
+  const duration = song.duration;
+  const ready = Number.isFinite(duration) && duration > 0;
+  seek.disabled = !ready;
+  seek.max = ready ? duration : 0;
+  seek.value = song.currentTime || 0;
+  $('elapsed').textContent = clock(song.currentTime || 0);
+  $('duration').textContent = ready ? clock(duration) : '–:––';
+  seek.setAttribute('aria-valuetext', $('elapsed').textContent + ' / ' + $('duration').textContent);
+}
+seek.oninput = () => {
+  if (!seek.disabled) song.currentTime = Number(seek.value);
+  updateTimeline();
+};
+function syncTransport() {
+  const playing = !song.paused && !song.ended;
+  $('deck-toggle').dataset.playing = String(playing);
+  $('deck-toggle').setAttribute('aria-label', playing ? 'Пауза' : 'Воспроизвести');
+  for (const button of document.querySelectorAll('.listen')) {
+    const selected = button.dataset.src === currentTrack?.audio;
+    button.dataset.playing = String(selected && playing);
+    button.closest('.nominee').classList.toggle('on-deck', selected);
+    button.setAttribute('aria-label', (selected && playing ? 'Пауза — ' : 'Слушать — ') + button.dataset.title);
+  }
+}
+function playTrack(track) {
+  const same = track.audio === currentTrack?.audio;
+  if (same && !song.paused) { song.pause(); return; }
+  if (!same || song.error) {
+    currentTrack = track;
+    song.src = track.audio;
+    $('deck-title').textContent = track.name;
+    $('deck-artist').textContent = track.artist || '';
+    $('deck-cover').src = track.image || '/logo.webp';
+    $('deck').hidden = false;
+    document.body.classList.add('has-deck');
+    updateTimeline();
+  }
+  $('deck-error').textContent = '';
+  song.play().catch(error => {
+    if (currentTrack?.audio === track.audio && error.name !== 'AbortError')
+      $('deck-error').textContent = 'Не удалось воспроизвести. Нажми ещё раз.';
+    syncTransport();
+  });
+}
+$('deck-toggle').onclick = () => { if (currentTrack) playTrack(currentTrack); };
+for (const event of ['timeupdate','loadedmetadata','durationchange','seeked','emptied'])
+  song.addEventListener(event, updateTimeline);
+for (const event of ['play','pause','ended','error'])
+  song.addEventListener(event, syncTransport);
+function listenButton(track) {
+  const button = el('button','listen transport');
+  button.type = 'button';
+  button.dataset.src = track.audio;
+  button.dataset.title = track.name;
+  button.onclick = () => playTrack(track);
+  return button;
+}
+function show(c,scroll){active=c.id;renderCategories();let d=$('detail');d.hidden=false;d.dataset.category=c.id;d.replaceChildren(el('h2','',c.name));const saved=myVotes.find(v=>v.category===c.id);if(!c.items.length){d.append(el('p','empty','Номинанты пока не объявлены.'));if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'});return}
 const usedHere=info.usedCategories?.includes(c.id);
 const isOpen=()=>Date.now()>=info.start&&Date.now()<info.end&&!!info.start;d.append(el('p','muted',saved?'Твой голос уже принят. Изменить выбор нельзя.':usedHere?'С этого браузера уже голосовали в этой номинации.':isOpen()&&!info.user?'Войди в аккаунт, чтобы выбрать номинантов.':isOpen()?'Выбери до трёх номинантов.':'Голосование сейчас закрыто.'));
 let grid=el('div','nominee-grid'),count=el('strong','',''),submit=el('button','primary','Подтвердить голоса'),inputs=[];const refresh=()=>{count.textContent='Выбрано: '+selection.size+' / 3';submit.disabled=!info.user||!!saved||usedHere||!isOpen()||selection.size===0;for(let x of inputs)x.disabled=!info.user||!!saved||usedHere||!isOpen()||(!x.checked&&selection.size>=3)};
-for(let n of c.items){let card=el('article','nominee'),label=el('label'),check=el('input');check.type='checkbox';check.checked=saved?saved.choices.includes(n.id):selection.has(n.id);check.onchange=()=>{if(check.checked)selection.add(n.id);else selection.delete(n.id);refresh()};inputs.push(check);if(n.image){let im=el('img');im.src=n.image;im.alt=n.name;im.loading='lazy';card.append(im)}label.append(check,el('span','',n.name));card.append(label);if(n.artist) card.append(el('span','muted',n.artist));
-  if(n.audio) card.append(audioPlayer(n.audio, [n.artist,n.name].filter(Boolean).join(' — ')));
-  for(const work of n.works || []) {
-    card.append(el('span','',work.name),audioPlayer(work.audio,work.name));
+for (const n of c.items) {
+  const card = el('article','nominee');
+  const art = el('div','nominee-art');
+  if (n.image) {
+    const image = el('img');
+    image.src = n.image;
+    image.alt = '';
+    image.loading = 'lazy';
+    art.append(image);
+  }
+  if (n.audio) art.append(listenButton(n));
+  const label = el('label');
+  const check = el('input');
+  check.type = 'checkbox';
+  check.checked = saved ? saved.choices.includes(n.id) : selection.has(n.id);
+  check.hidden = !saved && (!info.user || !isOpen() || usedHere);
+  check.onchange = () => {
+    if (check.checked) selection.add(n.id);
+    else selection.delete(n.id);
+    refresh();
+  };
+  inputs.push(check);
+  label.append(check,el('span','',n.name));
+  card.append(art,label);
+  if (n.artist) card.append(el('span','credit',n.artist));
+  for (const work of n.works || []) {
+    const row = el('div','work-row');
+    row.append(el('span','',work.name), listenButton({...work,image:n.image}));
+    card.append(row);
   }
   if(n.url) {
     const link = el('a','album-link','Слушать на SoundCloud ↗');
@@ -67,6 +149,7 @@ for(let n of c.items){let card=el('article','nominee'),label=el('label'),check=e
   grid.append(card);
 }
 d.append(grid);
+syncTransport();
 if(!info.user && isOpen()){
   const loginButton=el('button','primary','Войти для голосования');
   loginButton.onclick=()=>$('auth').showModal();
@@ -74,6 +157,6 @@ if(!info.user && isOpen()){
 } else if(info.user && !saved && !usedHere){const actions=el('div','vote-actions');actions.append(count,submit);d.append(actions)}refresh();submit.onclick=async()=>{if(!info.user){$('auth').showModal();return}if(!confirm('Подтвердить выбор? Изменить его будет нельзя.'))return;submit.disabled=true;try{await api('vote',{category:c.id,ids:[...selection]});selection.clear();await init()}catch(e){alert(e.message);if(e.status===401||e.status===409){selection.clear();await init()}else refresh()}};if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'})}
 $('account').onclick=async()=>{if(info?.user){if(confirm('Выйти из аккаунта?')){await api('logout',{});selection.clear();await init()}}else $('auth').showModal()};
 $('close-auth').onclick=()=>$('auth').close();$('login').onsubmit=async e=>{e.preventDefault();$('error').textContent='';try{await api(e.submitter?.value||'login',Object.fromEntries(new FormData(e.target)));e.target.reset();$('auth').close();await init()}catch(e){$('error').textContent=e.message}};
-document.addEventListener('play',e=>{if(e.target.tagName==='AUDIO')document.querySelectorAll('audio').forEach(a=>{if(a!==e.target)a.pause()})},true);init().catch(e=>$('timer').textContent=e.message);setInterval(timer,1000);
+init().catch(e=>$('timer').textContent=e.message);setInterval(timer,1000);
 // Remove only connected dark background from the existing logo, preserving lettering.
 (function cleanLogo(){const original=new Image();original.onload=()=>{try{const canvas=document.createElement('canvas');canvas.width=original.naturalWidth;canvas.height=original.naturalHeight;const w=canvas.width,h=canvas.height,ctx=canvas.getContext('2d');ctx.drawImage(original,0,0);const im=ctx.getImageData(0,0,w,h),p=im.data,seen=new Uint8Array(w*h),queue=new Int32Array(w*h);let head=0,tail=0;function visit(i){if(seen[i])return;seen[i]=1;let k=i*4;const max=Math.max(p[k],p[k+1],p[k+2]);if(max>76)return;queue[tail++]=i;p[k+3]=0}for(let x=0;x<w;x++){visit(x);visit((h-1)*w+x)}for(let y=0;y<h;y++){visit(y*w);visit(y*w+w-1)}while(head<tail){let i=queue[head++],x=i%w,y=Math.floor(i/w);if(x>0)visit(i-1);if(x<w-1)visit(i+1);if(y>0)visit(i-w);if(y<h-1)visit(i+w)}ctx.putImageData(im,0,0);let l=w,r=0,t=h,b=0;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(p[(y*w+x)*4+3]){l=Math.min(l,x);r=Math.max(r,x);t=Math.min(t,y);b=Math.max(b,y)}if(r<l||b<t)return;const out=document.createElement('canvas');out.width=r-l+1;out.height=b-t+1;out.getContext('2d').drawImage(canvas,l,t,out.width,out.height,0,0,out.width,out.height);const uri=out.toDataURL('image/png');document.querySelectorAll('img[src="/logo.webp"]').forEach(img=>{img.src=uri;img.dataset.cleanLogo='true'})}catch(e){console.warn('Logo background fallback',e.message)}};original.src='/logo.webp'})();

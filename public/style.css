@@ -125,3 +125,50 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere }
 }
 
 .album-link { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; font-weight: 700; overflow-wrap: anywhere }
+
+/* The ballot takes its accent from the selected category sleeve. */
+#detail { --accent: #96deed; background: #202024; color: #fff9ef; border: 0; padding: clamp(16px,3vw,38px); border-top: 6px solid var(--accent); border-radius: 0 0 20px 20px }
+#detail[data-category=track] { --accent: #f7cc74 }
+#detail[data-category=cover] { --accent: #ffaece }
+#detail[data-category=producer] { --accent: #b9b0f2 }
+#detail[data-category=album] { --accent: #bbdca9 }
+#detail h2 { font-size: clamp(32px,4.3vw,60px); letter-spacing: -.06em }
+#detail > .muted, #detail .empty { color: #c8c5c3 }
+#detail > .muted { margin: 9px 0 22px }
+#detail .primary { background: var(--accent); color: #19191b; margin-top: 12px }
+.nominee-grid { gap: clamp(10px,1.8vw,22px) }
+.nominee { position: relative; overflow: hidden; background: #303034; border: 1px solid #4c4b50; border-radius: 14px; padding: 0 0 15px; gap: 0; min-width: 0 }
+.nominee-art { position: relative; background: #26262a; overflow: hidden }
+.nominee-art img { display: block }
+.nominee label, .nominee .credit, .nominee .album-link, .work-row { margin-inline: clamp(10px,1.4vw,20px) }
+.nominee label { margin-top: 13px; align-items: baseline; font-size: clamp(16px,1.6vw,24px); line-height: 1.13; letter-spacing: -.035em }
+.nominee input { margin: 0; align-self: center; accent-color: var(--accent) }
+.nominee .credit { color: #d1cdcc; margin-top: 6px; font-size: 14px; line-height: 1.25 }
+.nominee .album-link { color: var(--accent); margin-top: 12px; font-size: 14px }
+.nominee.on-deck { border-color: var(--accent) }
+.nominee:has(input:checked) { background: #373739; outline: 2px solid var(--accent) }
+.transport { width: 46px; height: 46px; border-radius: 50%; background: #fff7e9; color: #19191b; border: 1px solid #19191b; display: grid; place-items: center; padding: 0; cursor: pointer }
+.transport::before { content: ''; width: 0; height: 0; margin-left: 3px; border-left: 13px solid currentColor; border-top: 8px solid transparent; border-bottom: 8px solid transparent }
+.transport[data-playing=true]::before { box-sizing: content-box; width: 5px; height: 15px; margin: 0; border: 0; border-inline: 4px solid currentColor }
+.nominee-art .listen { position: absolute; right: 9px; bottom: 9px; box-shadow: 0 2px 8px #0005 }
+.listen:hover, .listen[data-playing=true] { background: var(--accent) }
+.work-row { display: flex; align-items: center; justify-content: space-between; gap: 8px }
+.deck[hidden] { display: none }
+.deck { position: fixed; bottom: max(10px,env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(800px,calc(100% - 20px)); z-index: 6; display: grid; grid-template-columns: 50px minmax(0,1fr) 46px minmax(160px,1fr); gap: 12px; align-items: center; padding: 10px 16px 10px 10px; background: #18181c; color: #fff9f3; border: 1px solid #66616a; border-radius: 18px; box-shadow: 0 8px 36px #0006 }
+#deck-cover { width: 50px; height: 50px; object-fit: cover; border-radius: 10px }
+.deck-info { display: grid; min-width: 0; line-height: 1.25 }
+.deck-info strong,.deck-info span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+#deck-artist { font-size: 13px; color: #c9c5c6 }
+#deck-error { color: #ffb6bf; font-size: 12px; white-space: normal }
+#deck-toggle { background: var(--rose) }
+.timeline { display: flex; align-items: center; gap: 8px; font: 12px var(--mono); font-variant-numeric: tabular-nums }
+#seek { flex: 1; min-width: 0; margin: 0; padding: 0; height: 32px; cursor: pointer; border: 0; background: transparent; accent-color: var(--rose); touch-action: pan-y }
+.has-deck { padding-bottom: calc(96px + env(safe-area-inset-bottom)) }
+@media (max-width:620px) {
+  .deck { grid-template-columns: 42px minmax(0,1fr) 44px; gap: 2px 10px; padding: 8px 12px; border-radius: 15px }
+  #deck-cover { width: 42px; height: 42px }
+  .timeline { grid-column: 1/-1 }
+  .has-deck { padding-bottom: calc(115px + env(safe-area-inset-bottom)) }
+  .nominee label { font-size: 17px }
+  .nominee .credit { font-size: 13px }
+}
