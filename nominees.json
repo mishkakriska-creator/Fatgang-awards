@@ -7,6 +7,11 @@
         "id": "alteen",
         "name": "alteen",
         "image": "/media/alteen.jpeg"
+      },
+      {
+        "id": "deltaaa",
+        "name": "deltaaa",
+        "image": "/media/deltaaa.jpeg"
       }
     ]
   },
@@ -15,18 +20,18 @@
     "name": "Продюсер года",
     "items": [
       {
-        "id": "nonword",
-        "name": "nonword",
-        "works": [
-          {
-            "name": "alteen — y’all rolling loud we rollin louder",
-            "audio": "/media/rolling-loud.mp3"
-          },
-          {
-            "name": "wyr8th — took yo shi w/iyridescent",
-            "audio": "/media/took-yo-shi.mp3"
-          }
-        ]
+        "id": "nonword-rolling-loud",
+        "name": "y’all rolling loud we rollin louder",
+        "artist": "alteen · прод. nonword",
+        "audio": "/media/rolling-loud.mp3",
+        "image": "/media/rolling-loud-cover.jpg"
+      },
+      {
+        "id": "nonword-took-yo-shi",
+        "name": "took yo shi w/iyridescent",
+        "artist": "wyr8th · прод. nonword",
+        "audio": "/media/took-yo-shi.mp3",
+        "image": "/media/took-yo-shi-cover.jpg"
       }
     ]
   },
@@ -36,13 +41,17 @@
     "items": [
       {
         "id": "magical-girl",
-        "name": "Magical Girl Apocalypse",
-        "image": "/media/magical-girl.jpeg"
+        "name": "hahaha",
+        "image": "/media/magical-girl.jpeg",
+        "artist": "alteen",
+        "audio": "/media/hahaha.mp3"
       },
       {
         "id": "drawing",
-        "name": "Рисунок на розовом фоне",
-        "image": "/media/drawing.jpeg"
+        "name": "I can’t take care of myself",
+        "image": "/media/drawing.jpeg",
+        "artist": "alteen",
+        "audio": "/media/take-care.mp3"
       }
     ]
   },
@@ -54,43 +63,64 @@
         "id": "rolling-loud",
         "name": "y’all rolling loud we rollin louder",
         "artist": "alteen",
-        "audio": "/media/rolling-loud.mp3"
+        "audio": "/media/rolling-loud.mp3",
+        "image": "/media/rolling-loud-cover.jpg"
       },
       {
         "id": "hahaha",
         "name": "hahaha",
         "artist": "alteen",
-        "audio": "/media/hahaha.mp3"
+        "audio": "/media/hahaha.mp3",
+        "image": "/media/hahaha-cover.jpg"
       },
       {
         "id": "take-care",
-        "name": "I can’t take care",
+        "name": "I can’t take care of myself",
         "artist": "alteen",
-        "audio": "/media/take-care.mp3"
+        "audio": "/media/take-care.mp3",
+        "image": "/media/take-care-cover.jpg"
       },
       {
         "id": "danganronpa",
         "name": "danganronpa ダンガンロンパ",
         "artist": "deltaaa feat. yumixx",
-        "audio": "/media/danganronpa.mp3"
+        "audio": "/media/danganronpa.mp3",
+        "image": "/media/danganronpa-cover.jpg"
       },
       {
         "id": "autotune",
         "name": "автотюн xdddddd",
         "artist": "deltaaa",
-        "audio": "/media/autotune.mp3"
+        "audio": "/media/autotune.mp3",
+        "image": "/media/autotune-cover.jpg"
       },
       {
         "id": "chuzhoy-stsenariy",
         "name": "чужой сценарий",
         "artist": "deltaaa",
-        "audio": "/media/chuzhoy-stsenariy.mp3"
+        "audio": "/media/chuzhoy-stsenariy.mp3",
+        "image": "/media/chuzhoy-stsenariy-cover.jpg"
       }
     ]
   },
   {
     "id": "album",
     "name": "Альбом года",
-    "items": []
+    "items": [
+      {
+        "id": "out-of-frame",
+        "name": "OUT OF FRAME",
+        "artist": "deltaaa",
+        "image": "/media/out-of-frame-album.jpg",
+        "url": "https://soundcloud.com/deltanoww/sets/out-of-frame"
+      },
+      {
+        "id": "wish",
+        "name": "ฅ wish #1 (=ʘᆽʘ=)∫",
+        "artist": "alteen",
+        "image": "/media/wish-album.jpg",
+        "url": "https://soundcloud.com/alteen/sets/wish"
+      }
+    ]
   }
 ]

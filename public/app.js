@@ -57,6 +57,13 @@ for(let n of c.items){let card=el('article','nominee'),label=el('label'),check=e
   for(const work of n.works || []) {
     card.append(el('span','',work.name),audioPlayer(work.audio,work.name));
   }
+  if(n.url) {
+    const link = el('a','album-link','Слушать на SoundCloud ↗');
+    link.href = n.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    card.append(link);
+  }
   grid.append(card);
 }
 d.append(grid);
