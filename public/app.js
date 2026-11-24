@@ -1,8 +1,8 @@
 let info=null,active=null,myVotes=[],selection=new Set();const $=id=>document.getElementById(id);
 function el(tag,cls,txt){let x=document.createElement(tag);if(cls)x.className=cls;if(txt!==undefined)x.textContent=txt;return x}
-async function api(path,data){let r=await fetch('/api/'+path,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});let j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(Error(j.error||'Ошибка '+r.status),{status:r.status});return j}
+async function api(path,data){let r=await fetch('/api/'+path,data===undefined?{headers:path==='info'?recoveryHeaders():{}}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(['register','login','vote'].includes(path)?{...data,proof:await humanCheck(path),...(path==='vote'?{fingerprint:browserSignals()}:{})}:data)});let j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(Error(j.error||'Ошибка '+r.status),{status:r.status});return j}
 function timer(){if(!info)return;let now=Date.now();if(!info.start){$('timer').textContent='Скоро начало голосования';return}let target=now<info.start?info.start:info.end;if(now>=info.end){$('timer').textContent='Голосование завершено';return}let ms=Math.max(0,target-now),d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60,s=Math.floor(ms/1000)%60;$('timer').textContent=(now<info.start?'До начала: ':'До конца: ')+d+'д '+[h,m,s].map(x=>String(x).padStart(2,'0')).join(':')}
-async function init(){info=await api('info');myVotes=info.user?await api('my-votes').catch(()=>[]):[];$('account').textContent=info.user?info.user.name+' · Выйти':'Войти ↗︎';renderCategories();timer();if(active){let c=info.nominees.find(x=>x.id===active);if(c)show(c,false)}}
+async function init(){info=await api('info');try{localStorage.setItem(deviceStore,info.recovery)}catch{};myVotes=info.user?await api('my-votes').catch(()=>[]):[];$('account').textContent=info.user?info.user.name+' · Выйти':'Войти ↗︎';renderCategories();timer();if(active){let c=info.nominees.find(x=>x.id===active);if(c)show(c,false)}}
 function renderCategories() {
   const buttons = info.nominees.map(category => {
     const button = el('button', 'category');
@@ -107,7 +107,7 @@ function listenButton(track) {
 }
 function show(c,scroll){active=c.id;renderCategories();let d=$('detail');d.hidden=false;d.dataset.category=c.id;d.replaceChildren(el('h2','',c.name));const saved=myVotes.find(v=>v.category===c.id);if(!c.items.length){d.append(el('p','empty','Номинанты пока не объявлены.'));if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'});return}
 const usedHere=info.usedCategories?.includes(c.id);
-const isOpen=()=>Date.now()>=info.start&&Date.now()<info.end&&!!info.start;d.append(el('p','muted',saved?'Твой голос уже принят. Изменить выбор нельзя.':usedHere?'С этого браузера уже голосовали в этой номинации.':isOpen()&&!info.user?'Войди в аккаунт, чтобы выбрать номинантов.':isOpen()?'Выбери до трёх номинантов.':'Голосование сейчас закрыто.'));
+const isOpen=()=>Date.now()>=info.start&&Date.now()<info.end&&!!info.start;d.append(el('p','muted',saved?'Твой голос уже принят. Изменить выбор нельзя.':usedHere?'С этого устройства уже голосовали в данной номинации':isOpen()&&!info.user?'Войди в аккаунт, чтобы выбрать номинантов.':isOpen()?'Выбери до трёх номинантов.':'Голосование сейчас закрыто.'));
 let grid=el('div','nominee-grid'),count=el('strong','',''),submit=el('button','primary','Подтвердить голоса'),inputs=[];const refresh=()=>{count.textContent='Выбрано: '+selection.size+' / 3';submit.disabled=!info.user||!!saved||usedHere||!isOpen()||selection.size===0;for(let x of inputs)x.disabled=!info.user||!!saved||usedHere||!isOpen()||(!x.checked&&selection.size>=3)};
 for (const n of c.items) {
   const card = el('article','nominee');

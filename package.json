@@ -6,11 +6,12 @@
     "start": "NODE_EXTRA_CA_CERTS=certs/prod-ca-2021.crt node server.js"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-pg-simple": "^10.0.0",
     "cookie-parser": "^1.4.7",
     "express": "^4.21.2",
-    "pg": "^8.13.1",
-    "bcryptjs": "^2.4.3",
     "express-session": "^1.18.1",
-    "connect-pg-simple": "^10.0.0"
+    "pg": "^8.13.1",
+    "svg-captcha": "^1.4.0"
   }
 }

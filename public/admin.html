@@ -1,1 +1,23 @@
-<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/style.css"><main><h2>Результаты FatGang</h2><form><input type="password" placeholder="Пароль администратора" required><button>Показать</button></form><pre></pre></main><script>document.querySelector('form').onsubmit=async e=>{e.preventDefault();let r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:document.querySelector('input').value})});document.querySelector('pre').textContent=r.ok?JSON.stringify(await r.json(),null,2):'Доступ запрещён'}</script></html>
+<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/style.css">
+<main><h2>Результаты FatGang</h2><form><input type="password" placeholder="Пароль администратора" required><button>Показать</button></form>
+<pre id="results"></pre><section hidden><h2>Подозрительная активность</h2><p id="activity"></p></section></main>
+<script>
+const labels={vote_burst:'Серия запросов голосования с одного IP',duplicate:'Повторный голос',fingerprint_match:'Совпадение отпечатков, голос принят',rate_limit:'Превышен лимит',captcha:'Проверка не пройдена',admin_denied:'Неверный пароль администратора',registration_burst:'Серия регистраций с одного IP'};
+const actions={vote:'Голосование',register:'Регистрация',login:'Вход',admin:'Админ-панель',challenge:'CAPTCHA'};
+const categories={artist:'Артист года',producer:'Продюсер года',cover:'Обложка года',track:'Трек года',album:'Альбом года'};
+document.querySelector('form').onsubmit=async e=>{
+  e.preventDefault();
+  const section=document.querySelector('section'),results=document.querySelector('#results');
+  section.hidden=true;results.textContent='';
+  try {
+    const r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:e.target.querySelector('input').value})});
+    if(!r.ok){results.textContent=r.status===429?'Слишком много запросов. Попробуй через 10 минут.':'Доступ запрещён';return;}
+    const {users,results:votes,activity}=await r.json();
+    results.textContent=JSON.stringify({users,results:votes},null,2);
+    const rows=activity.map(x=>{const row=document.createElement('div');
+      row.textContent=[new Date(x.hour).toLocaleString('ru-RU'),labels[x.kind],actions[x.action],categories[x.category],x.hits+' раз'].filter(Boolean).join(' · ');return row;});
+    document.querySelector('#activity').replaceChildren(...(rows.length?rows:['За последние 30 дней событий нет.']));
+    section.hidden=false;
+  } catch {results.textContent='Не удалось загрузить данные.';}
+};
+</script></html>
