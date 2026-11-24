@@ -1,0 +1,27 @@
+[
+  {
+    "id": "artist",
+    "name": "Артист года",
+    "items": []
+  },
+  {
+    "id": "producer",
+    "name": "Продюсер года",
+    "items": []
+  },
+  {
+    "id": "cover",
+    "name": "Обложка года",
+    "items": []
+  },
+  {
+    "id": "track",
+    "name": "Трек года",
+    "items": []
+  },
+  {
+    "id": "album",
+    "name": "Альбом года",
+    "items": []
+  }
+]
