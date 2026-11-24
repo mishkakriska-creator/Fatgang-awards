@@ -17,6 +17,11 @@
         "id": "lobkovye-vshi",
         "name": "Лобковые Вши",
         "image": "/media/lv-artist.jpeg"
+      },
+      {
+        "id": "moonmage",
+        "name": "лунный маг",
+        "image": "/media/moonmage-artist.jpg"
       }
     ]
   },
@@ -37,6 +42,20 @@
         "artist": "wyr8th · прод. nonword",
         "audio": "/media/took-yo-shi.mp3",
         "image": "/media/took-yo-shi-cover.jpg"
+      },
+      {
+        "id": "moonmage-hillclimb-prod",
+        "name": "hillclimb!",
+        "artist": "лунный маг · прод. лунный маг",
+        "image": "/media/moonmage-hillclimb.jpg",
+        "audio": "/media/moonmage-hillclimb.mp3"
+      },
+      {
+        "id": "moonmage-letnie-vayby-prod",
+        "name": "летние вайбы",
+        "artist": "deltaaa, qu1ckmeow & лунный маг · прод. лунный маг",
+        "image": "/media/moonmage-letnie-vayby.jpg",
+        "audio": "/media/moonmage-letnie-vayby.mp3"
       }
     ]
   },
@@ -78,6 +97,22 @@
         "artist": "Лобковые Вши",
         "image": "/media/lv-davaj-otlozhim.jpg",
         "url": "https://soundcloud.com/popkabegemotika/sets/davaj-otlozhim-na-zavtra"
+      },
+      {
+        "id": "moonmage-hillclimb-cover",
+        "name": "hillclimb!",
+        "artist": "лунный маг",
+        "image": "/media/moonmage-hillclimb.jpg",
+        "audio": "/media/moonmage-hillclimb.mp3",
+        "url": "https://soundcloud.com/moonmagee/hillclimb"
+      },
+      {
+        "id": "moonmage-letnie-vayby-cover",
+        "name": "летние вайбы",
+        "artist": "deltaaa, qu1ckmeow & лунный маг",
+        "image": "/media/moonmage-letnie-vayby.jpg",
+        "audio": "/media/moonmage-letnie-vayby.mp3",
+        "url": "https://soundcloud.com/qu1ckmeowkich/leto"
       }
     ]
   },
@@ -147,6 +182,27 @@
         "artist": "Лобковые Вши",
         "image": "/media/lv-amfitamefedronokain.jpg",
         "audio": "/media/lv-amfitamefedronokain.mp3"
+      },
+      {
+        "id": "moonmage-hillclimb",
+        "name": "hillclimb!",
+        "artist": "лунный маг",
+        "image": "/media/moonmage-hillclimb.jpg",
+        "audio": "/media/moonmage-hillclimb.mp3"
+      },
+      {
+        "id": "moonmage-letnie-vayby",
+        "name": "летние вайбы",
+        "artist": "deltaaa, qu1ckmeow & лунный маг",
+        "image": "/media/moonmage-letnie-vayby.jpg",
+        "audio": "/media/moonmage-letnie-vayby.mp3"
+      },
+      {
+        "id": "moonmage-nu-pogodi",
+        "name": "НУ ПОГОДИ (feat. yngbless)",
+        "artist": "лунный маг",
+        "image": "/media/moonmage-nu-pogodi.jpg",
+        "audio": "/media/moonmage-nu-pogodi.mp3"
       }
     ]
   },
