@@ -6,22 +6,44 @@
       {
         "id": "alteen",
         "name": "alteen",
-        "image": "/media/alteen.jpeg"
+        "image": "/media/alteen.jpeg",
+        "url": "https://soundcloud.com/alteen"
       },
       {
         "id": "deltaaa",
         "name": "deltaaa",
-        "image": "/media/deltaaa.jpeg"
+        "image": "/media/deltaaa.jpeg",
+        "url": "https://soundcloud.com/deltanoww"
       },
       {
         "id": "lobkovye-vshi",
         "name": "Лобковые Вши",
-        "image": "/media/lv-artist.jpeg"
+        "image": "/media/lv-artist.jpeg",
+        "url": "https://soundcloud.com/popkabegemotika"
       },
       {
         "id": "moonmage",
         "name": "лунный маг",
-        "image": "/media/moonmage-artist.jpg"
+        "image": "/media/moonmage-artist.jpg",
+        "url": "https://soundcloud.com/moonmagee"
+      },
+      {
+        "id": "starstrike",
+        "name": "starstrike",
+        "url": "https://soundcloud.com/starstrike1",
+        "image": "/media/starstrike-artist.jpg"
+      },
+      {
+        "id": "qu1ckmeow",
+        "name": "@qu1ckmeow",
+        "url": "https://soundcloud.com/qu1ckmeowkich",
+        "image": "/media/qu1ckmeow-artist.jpg"
+      },
+      {
+        "id": "disforiya",
+        "name": "#дисфория",
+        "url": "https://soundcloud.com/disf0riya",
+        "image": "/media/disforiya-artist.jpg"
       }
     ]
   },
@@ -56,6 +78,27 @@
         "artist": "deltaaa, qu1ckmeow & лунный маг · прод. лунный маг",
         "image": "/media/moonmage-letnie-vayby.jpg",
         "audio": "/media/moonmage-letnie-vayby.mp3"
+      },
+      {
+        "id": "saymee-v-tayne",
+        "name": "в тайне ^__^",
+        "artist": "тянка хикка · прод. saymee",
+        "audio": "/media/saymee-v-tayne.mp3",
+        "image": "/media/saymee-v-tayne.jpg"
+      },
+      {
+        "id": "saymee-fak-slip",
+        "name": "фак слип",
+        "artist": "тёма сиппин · прод. saymee",
+        "audio": "/media/saymee-fak-slip.mp3",
+        "image": "/media/saymee-fak-slip.jpg"
+      },
+      {
+        "id": "saymee-serdtse",
+        "name": "сердце",
+        "artist": "coldn1ght · прод. saymee",
+        "audio": "/media/saymee-serdtse.mp3",
+        "image": "/media/saymee-serdtse.jpg"
       }
     ]
   },
@@ -203,6 +246,27 @@
         "artist": "лунный маг",
         "image": "/media/moonmage-nu-pogodi.jpg",
         "audio": "/media/moonmage-nu-pogodi.mp3"
+      },
+      {
+        "id": "disforiya-portalnaya-pushka",
+        "name": "портальная пушка",
+        "artist": "#дисфория",
+        "audio": "/media/disforiya-portalnaya-pushka.mp3",
+        "image": "/media/disforiya-artist.jpg"
+      },
+      {
+        "id": "disforiya-navyrost",
+        "name": "на вырост",
+        "artist": "#дисфория",
+        "audio": "/media/disforiya-navyrost.mp3",
+        "image": "/media/disforiya-artist.jpg"
+      },
+      {
+        "id": "disforiya-chto-so-mnoy",
+        "name": "ЧтоСоМной?",
+        "artist": "!alterago & #дисфория",
+        "audio": "/media/disforiya-chto-so-mnoy.mp3",
+        "image": "/media/disforiya-artist.jpg"
       }
     ]
   },

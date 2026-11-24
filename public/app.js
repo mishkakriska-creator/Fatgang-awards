@@ -140,7 +140,7 @@ for (const n of c.items) {
     card.append(row);
   }
   if(n.url) {
-    const link = el('a','album-link','Слушать на SoundCloud ↗');
+    const link = el('a','album-link',c.id==='artist'?'Профиль в SoundCloud ↗':'Слушать на SoundCloud ↗');
     link.href = n.url;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
