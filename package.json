@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node server.js"
+    "start": "NODE_EXTRA_CA_CERTS=certs/prod-ca-2021.crt node server.js"
   },
   "dependencies": {
     "express": "^4.21.2",
