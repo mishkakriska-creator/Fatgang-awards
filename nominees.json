@@ -156,6 +156,20 @@
         "image": "/media/moonmage-letnie-vayby.jpg",
         "audio": "/media/moonmage-letnie-vayby.mp3",
         "url": "https://soundcloud.com/qu1ckmeowkich/leto"
+      },
+      {
+        "id": "starstrike-b0occ-cover",
+        "name": "b0осс XD",
+        "artist": "starstrike",
+        "audio": "/media/starstrike-b0occ.mp3",
+        "image": "/media/starstrike-b0occ.jpg"
+      },
+      {
+        "id": "starstrike-puck-cover",
+        "name": "puck! [svyazz, omgphil]",
+        "artist": "starstrike",
+        "audio": "/media/starstrike-puck.mp3",
+        "image": "/media/starstrike-puck.jpg"
       }
     ]
   },
@@ -266,7 +280,28 @@
         "name": "ЧтоСоМной?",
         "artist": "!alterago & #дисфория",
         "audio": "/media/disforiya-chto-so-mnoy.mp3",
-        "image": "/media/disforiya-artist.jpg"
+        "image": "/media/disforiya-chto-so-mnoy.jpg"
+      },
+      {
+        "id": "starstrike-b0occ",
+        "name": "b0осс XD",
+        "artist": "starstrike",
+        "audio": "/media/starstrike-b0occ.mp3",
+        "image": "/media/starstrike-b0occ.jpg"
+      },
+      {
+        "id": "starstrike-puck",
+        "name": "puck! [svyazz, omgphil]",
+        "artist": "starstrike",
+        "audio": "/media/starstrike-puck.mp3",
+        "image": "/media/starstrike-puck.jpg"
+      },
+      {
+        "id": "starstrike-moneymaker",
+        "name": "moneymaker w/ ultracat349 [greentop]",
+        "artist": "starstrike",
+        "audio": "/media/starstrike-moneymaker.mp3",
+        "image": "/media/starstrike-moneymaker.png"
       }
     ]
   },
