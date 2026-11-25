@@ -18,7 +18,7 @@ app.use('/api', require('cookie-parser')(secret), (req, res, next) => {
   next();
 });
 app.use(session({store:new (require('connect-pg-simple')(session))({pool,createTableIfMissing:false}),secret,resave:false,saveUninitialized:false,cookie:{httpOnly:true,sameSite:'lax',secure:process.env.NODE_ENV==='production',maxAge:86400000*30}}));
-const start=Date.parse(process.env.VOTING_START||''),end=start+14*86400000,open=()=>Date.now()>=start&&Date.now()<end;
+const start=Date.parse(process.env.VOTING_START||''),end=start+7*86400000,open=()=>Date.now()>=start&&Date.now()<end;
 const wrap=f=>(q,s,n)=>Promise.resolve(f(q,s,n)).catch(n);
 function browserId(req) {
   const value = req.signedCookies[browserCookie];
