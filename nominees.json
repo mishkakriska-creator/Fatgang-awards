@@ -44,6 +44,23 @@
         "name": "#дисфория",
         "url": "https://soundcloud.com/disf0riya",
         "image": "/media/disforiya-artist.jpg"
+      },
+      {
+        "id": "nofear",
+        "name": "nofear",
+        "image": "/media/nofear.jpg",
+        "works": [
+          {
+            "name": "хостел",
+            "artist": "nofear",
+            "audio": "/media/nofear-hostel.mp3"
+          },
+          {
+            "name": "милое личико",
+            "artist": "nofear",
+            "audio": "/media/nofear-miloe-lichiko.mp3"
+          }
+        ]
       }
     ]
   },
@@ -364,6 +381,20 @@
         "artist": "qu1ckmeow",
         "url": "https://soundcloud.com/qu1ckmeowkich/ostav",
         "image": "/media/qm-ostav.jpg"
+      },
+      {
+        "id": "nofear-hostel",
+        "name": "хостел",
+        "artist": "nofear",
+        "audio": "/media/nofear-hostel.mp3",
+        "image": "/media/nofear.jpg"
+      },
+      {
+        "id": "nofear-miloe-lichiko",
+        "name": "милое личико",
+        "artist": "nofear",
+        "audio": "/media/nofear-miloe-lichiko.mp3",
+        "image": "/media/nofear.jpg"
       }
     ]
   },
