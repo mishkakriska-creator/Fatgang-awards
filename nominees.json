@@ -99,6 +99,28 @@
         "artist": "coldn1ght · прод. saymee",
         "audio": "/media/saymee-serdtse.mp3",
         "image": "/media/saymee-serdtse.jpg"
+      },
+      {
+        "id": "qm-telo-bolit",
+        "name": "тело болит",
+        "artist": "qu1ckmeow · прод. qu1ckmeow",
+        "url": "https://on.soundcloud.com/9swKeKXFQ8Kxq3dthM",
+        "image": "/media/qm-telo-bolit.jpg"
+      },
+      {
+        "id": "qm-b0occ-prod",
+        "name": "b0осс XD",
+        "artist": "starstrike · прод. qu1ckmeow, saymee",
+        "audio": "/media/starstrike-b0occ.mp3",
+        "image": "/media/starstrike-b0occ.jpg",
+        "url": "https://on.soundcloud.com/RBiAyQVC7ZBUTrK1PM"
+      },
+      {
+        "id": "qm-m0i-4yvstva",
+        "name": "м0и 4yВстВа",
+        "artist": "susssikkkks🖖 · прод. qu1ckmeow",
+        "url": "https://soundcloud.com/susssikkkks/m0i-4yvstva",
+        "image": "/media/qm-m0i-4yvstva.jpg"
       }
     ]
   },
@@ -168,6 +190,27 @@
         "artist": "starstrike",
         "audio": "/media/starstrike-puck.mp3",
         "image": "/media/starstrike-puck.jpg"
+      },
+      {
+        "id": "qm-ostav-cover",
+        "name": "оставь",
+        "artist": "qu1ckmeow",
+        "url": "https://soundcloud.com/qu1ckmeowkich/ostav",
+        "image": "/media/qm-ostav.jpg"
+      },
+      {
+        "id": "qm-arbuz-cypher-cover",
+        "name": "арбузы в голове",
+        "artist": "яширо, qu1ckmeow, starstrike, deltaaa",
+        "url": "https://soundcloud.com/qu1ckmeowkich/arbuz-cypher-1",
+        "image": "/media/qm-arbuz-cypher.jpg"
+      },
+      {
+        "id": "qm-arp-5-cover",
+        "name": "average roblox player V",
+        "artist": "qu1ckmeow, deltaaa",
+        "url": "https://soundcloud.com/qu1ckmeowkich/arp-5",
+        "image": "/media/qm-arp-5.jpg"
       }
     ]
   },
@@ -300,6 +343,27 @@
         "artist": "starstrike",
         "audio": "/media/starstrike-moneymaker.mp3",
         "image": "/media/starstrike-moneymaker.png"
+      },
+      {
+        "id": "qm-arbuz-cypher",
+        "name": "арбузы в голове",
+        "artist": "яширо, qu1ckmeow, starstrike, deltaaa",
+        "url": "https://soundcloud.com/qu1ckmeowkich/arbuz-cypher-1",
+        "image": "/media/qm-arbuz-cypher.jpg"
+      },
+      {
+        "id": "qm-arp-5",
+        "name": "average roblox player V",
+        "artist": "qu1ckmeow, deltaaa",
+        "url": "https://soundcloud.com/qu1ckmeowkich/arp-5",
+        "image": "/media/qm-arp-5.jpg"
+      },
+      {
+        "id": "qm-ostav",
+        "name": "оставь",
+        "artist": "qu1ckmeow",
+        "url": "https://soundcloud.com/qu1ckmeowkich/ostav",
+        "image": "/media/qm-ostav.jpg"
       }
     ]
   },
@@ -327,6 +391,13 @@
         "artist": "Лобковые Вши",
         "image": "/media/lv-dirty-songs.jpg",
         "url": "https://soundcloud.com/popkabegemotika/sets/ochen-gryaznye-vesyolye-pesni-pt1"
+      },
+      {
+        "id": "qm-o-tom-kak",
+        "name": "о том как я сошёл с ума думая о тебе",
+        "artist": "@qu1ckmeow",
+        "url": "https://on.soundcloud.com/jNKHGMYPjdhc7GsVit",
+        "image": "/media/qm-o-tom-kak.jpg"
       }
     ]
   }
