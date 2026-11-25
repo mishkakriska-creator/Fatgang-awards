@@ -142,7 +142,7 @@
       },
       {
         "id": "drawing",
-        "name": "I can’t take care of myself",
+        "name": "I CAN take care of myself",
         "image": "/media/drawing.jpeg",
         "artist": "alteen",
         "audio": "/media/take-care.mp3"
@@ -239,7 +239,7 @@
       },
       {
         "id": "take-care",
-        "name": "I can’t take care of myself",
+        "name": "I CAN take care of myself",
         "artist": "alteen",
         "audio": "/media/take-care.mp3",
         "image": "/media/take-care-cover.jpg"
