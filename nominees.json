@@ -48,19 +48,7 @@
       {
         "id": "nofear",
         "name": "nofear",
-        "image": "/media/nofear.jpg",
-        "works": [
-          {
-            "name": "хостел",
-            "artist": "nofear",
-            "audio": "/media/nofear-hostel.mp3"
-          },
-          {
-            "name": "милое личико",
-            "artist": "nofear",
-            "audio": "/media/nofear-miloe-lichiko.mp3"
-          }
-        ]
+        "image": "/media/nofear.jpg"
       }
     ]
   },
@@ -365,22 +353,22 @@
         "id": "qm-arbuz-cypher",
         "name": "арбузы в голове",
         "artist": "яширо, qu1ckmeow, starstrike, deltaaa",
-        "url": "https://soundcloud.com/qu1ckmeowkich/arbuz-cypher-1",
-        "image": "/media/qm-arbuz-cypher.jpg"
+        "image": "/media/qm-arbuz-cypher.jpg",
+        "audio": "/media/qm-arbuz-cypher.mp3"
       },
       {
         "id": "qm-arp-5",
         "name": "average roblox player V",
         "artist": "qu1ckmeow, deltaaa",
-        "url": "https://soundcloud.com/qu1ckmeowkich/arp-5",
-        "image": "/media/qm-arp-5.jpg"
+        "image": "/media/qm-arp-5.jpg",
+        "audio": "/media/qm-arp-5.mp3"
       },
       {
         "id": "qm-ostav",
         "name": "оставь",
         "artist": "qu1ckmeow",
-        "url": "https://soundcloud.com/qu1ckmeowkich/ostav",
-        "image": "/media/qm-ostav.jpg"
+        "image": "/media/qm-ostav.jpg",
+        "audio": "/media/qm-ostav.mp3"
       },
       {
         "id": "nofear-hostel",
