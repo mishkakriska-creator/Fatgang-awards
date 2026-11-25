@@ -1,23 +1,73 @@
-<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/style.css">
-<main><h2>Результаты FatGang</h2><form><input type="password" placeholder="Пароль администратора" required><button>Показать</button></form>
-<pre id="results"></pre><section hidden><h2>Подозрительная активность</h2><p id="activity"></p></section></main>
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Статистика голосования · FatGang Awards</title>
+<link rel="icon" href="/logo.webp">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f3ed;color:#201f24;font:16px/1.45 system-ui,sans-serif}main,header>div{width:min(100% - 32px,1040px);margin:auto}header{background:#201f24;color:white}header>div{display:flex;align-items:center;gap:12px;padding:12px 0}header img{width:48px;height:48px;object-fit:contain}header a{margin-left:auto;color:#fda7cd}main{padding-block:clamp(30px,5vw,68px)}h1,h2,p{margin:0}h1{font-size:clamp(32px,6vw,64px);letter-spacing:-.06em;line-height:1.04;margin-bottom:28px}h2{font-size:clamp(22px,3vw,32px);letter-spacing:-.045em}button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.55}button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #277398;outline-offset:3px}
+form{max-width:440px;background:white;border:1px solid #d6d2cc;border-radius:16px;padding:24px}label{display:block;font-weight:650}input{margin:8px 0 16px;padding:11px;width:100%;border:1px solid #8f8a90;border-radius:8px}form button,.refresh{background:#201f24;color:white;border:0;border-radius:8px;padding:10px 16px}#error{color:#932248;margin:10px 0}.toolbar,.panelhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.toolbar{margin-bottom:15px;color:#56535b;font-size:14px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:32px}.stat{background:white;border:1px solid #dbd6cf;padding:16px;border-radius:12px}.stat strong{display:block;font-size:clamp(27px,4vw,44px);line-height:1.15;font-variant-numeric:tabular-nums}.stat span{color:#59565d;font-size:14px}
+nav{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}nav button{border:1px solid #c8c3c0;border-radius:25px;padding:8px 13px;background:transparent}nav button[aria-pressed=true]{background:var(--accent);border-color:#302f32;font-weight:700}.panel{background:#232227;color:#fff;padding:clamp(16px,3vw,32px);border-radius:16px;border-top:5px solid var(--accent)}.panelhead span{color:#d0cdd1;font-size:14px}ol{list-style:none;padding:0;margin:16px 0 0}li{display:grid;grid-template-columns:26px 42px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 0;border-top:1px solid #454249}.rank,.score{font-variant-numeric:tabular-nums}.rank{color:#ccc}.pic{width:42px;height:42px;object-fit:cover;border-radius:7px;background:#353339}.name{display:block;overflow-wrap:anywhere}.credit{color:#ccc;font-size:13px}.score{text-align:right}.share{display:block;color:#ccc;font-size:12px}.bar{height:4px;background:#444148;border-radius:8px;margin-top:6px;overflow:hidden}.bar i{height:100%;display:block;background:var(--accent)}details{margin-top:22px;border-block:1px solid #ccc5c1;padding:15px 0}summary{font-weight:700;cursor:pointer}.event{padding:9px 0;border-bottom:1px solid #ddd7d2;font-size:14px}#activity{margin-top:10px}@media(max-width:500px){.stats{gap:5px}.stat{padding:10px 7px}.stat span{font-size:12px}li{grid-template-columns:20px 35px minmax(0,1fr) auto;gap:7px}.pic{width:35px;height:35px}}
+</style></head><body>
+<header><div><img src="/logo.webp" alt=""><strong>FatGang Awards 2026</strong><a href="/">На сайт ↗</a></div></header>
+<main><h1>Статистика голосования</h1>
+<form id="login"><label for="password">Пароль администратора</label><input id="password" type="password" autocomplete="current-password" required><button>Открыть статистику</button></form>
+<p id="error" role="alert"></p>
+<div id="dashboard" hidden><div class="toolbar"><span id="time" role="status"></span><button class="refresh" id="refresh">Обновить</button></div><div class="stats" id="stats"></div>
+<h2>Результаты по номинациям</h2><nav aria-label="Выбор номинации" id="tabs"></nav>
+<section class="panel" id="panel" aria-live="polite"><div class="panelhead"><h2 id="category"></h2><span id="total"></span></div><ol id="ranks"></ol></section>
+<details><summary>Подозрительная активность</summary><div id="activity"></div></details></div></main>
 <script>
-const labels={vote_burst:'Серия запросов голосования с одного IP',duplicate:'Повторный голос',fingerprint_match:'Совпадение отпечатков, голос принят',rate_limit:'Превышен лимит',captcha:'Проверка не пройдена',admin_denied:'Неверный пароль администратора',registration_burst:'Серия регистраций с одного IP'};
+const $=id=>document.getElementById(id);
+const colors={artist:'#96deed',producer:'#b9b0f2',cover:'#ffaece',track:'#f7cc74',album:'#bbdca9'};
+const labels={vote_burst:'Серия запросов с одного IP',duplicate:'Повторный голос',fingerprint_match:'Совпадение отпечатков, голос принят',rate_limit:'Превышен лимит',captcha:'Проверка не пройдена',admin_denied:'Неверный пароль администратора',registration_burst:'Серия регистраций с одного IP'};
 const actions={vote:'Голосование',register:'Регистрация',login:'Вход',admin:'Админ-панель',challenge:'CAPTCHA'};
-const categories={artist:'Артист года',producer:'Продюсер года',cover:'Обложка года',track:'Трек года',album:'Альбом года'};
-document.querySelector('form').onsubmit=async e=>{
-  e.preventDefault();
-  const section=document.querySelector('section'),results=document.querySelector('#results');
-  section.hidden=true;results.textContent='';
-  try {
-    const r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:e.target.querySelector('input').value})});
-    if(!r.ok){results.textContent=r.status===429?'Слишком много запросов. Попробуй через 10 минут.':'Доступ запрещён';return;}
-    const {users,results:votes,activity}=await r.json();
-    results.textContent=JSON.stringify({users,results:votes},null,2);
-    const rows=activity.map(x=>{const row=document.createElement('div');
-      row.textContent=[new Date(x.hour).toLocaleString('ru-RU'),labels[x.kind],actions[x.action],categories[x.category],x.hits+' раз'].filter(Boolean).join(' · ');return row;});
-    document.querySelector('#activity').replaceChildren(...(rows.length?rows:['За последние 30 дней событий нет.']));
-    section.hidden=false;
-  } catch {results.textContent='Не удалось загрузить данные.';}
-};
-</script></html>
+const fmt=new Intl.NumberFormat('ru-RU');
+const pct=new Intl.NumberFormat('ru-RU',{style:'percent',maximumFractionDigits:1});
+let categories=[],results=[],active;
+function el(tag,cls,text){const node=document.createElement(tag);node.className=cls;if(text!==undefined)node.textContent=text;return node}
+function showCategory(id){
+  const c=categories.find(item=>item.id===id);active=id;
+  for(const b of $('tabs').children)b.setAttribute('aria-pressed',String(b.dataset.id===id));
+  $('panel').style.setProperty('--accent',colors[id]);$('category').textContent=c.name;
+  const counts=new Map(results.filter(v=>v.category===id).map(v=>[v.nominee,Number(v.count)]));
+  const entries=c.items.map(n=>({...n,count:counts.get(n.id)||0}));
+  for(const [key,count] of counts)if(!c.items.some(n=>n.id===key))entries.push({name:key,count});
+  entries.sort((a,b)=>b.count-a.count);
+  const total=entries.reduce((sum,n)=>sum+n.count,0);
+  $('total').textContent='Голосов в номинации: '+fmt.format(total);
+  let rank=0;
+  $('ranks').replaceChildren(...entries.map((n,index)=>{
+    if(!index||entries[index-1].count!==n.count)rank=index+1;
+    const row=el('li',''),img=el('img','pic');img.alt='';img.loading='lazy';img.src=n.image||'/logo.webp';
+    const info=el('div','');info.append(el('strong','name',n.name));
+    if(n.artist)info.append(el('span','credit',n.artist));
+    const ratio=total?n.count/total:0,bar=el('div','bar'),fill=el('i','');fill.style.width=ratio*100+'%';bar.append(fill);info.append(bar);
+    const score=el('strong','score',fmt.format(n.count));score.append(el('span','share',pct.format(ratio)));
+    row.append(el('span','rank',n.count?rank:'—'),img,info,score);return row;
+  }));
+}
+async function load(){
+  const submit=$('login').querySelector('button');submit.disabled=$('refresh').disabled=true;$('error').textContent='';
+  try{
+    const r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:$('password').value})});
+    if(!r.ok){
+      if(r.status===403){$('dashboard').hidden=true;$('login').hidden=false}
+      throw Error(r.status===403?'Неверный пароль.':r.status===429?'Слишком много запросов. Попробуй через 10 минут.':'Не удалось загрузить статистику.');
+    }
+    const data=await r.json();
+    const catalog=await fetch('/api/info');if(!catalog.ok)throw Error('Не удалось загрузить номинации.');
+    categories=(await catalog.json()).nominees;results=data.results;
+    const sum=results.reduce((n,v)=>n+Number(v.count),0);
+    $('stats').replaceChildren(...[[data.users,'Аккаунтов'],[sum,'Голосов за номинантов'],[categories.reduce((n,c)=>n+c.items.length,0),'Позиций в номинациях']].map(([n,label])=>{
+      const tile=el('div','stat');tile.append(el('strong','',fmt.format(n)),el('span','',label));return tile;
+    }));
+    $('tabs').replaceChildren(...categories.map(c=>{const b=el('button','',c.name);b.dataset.id=c.id;b.style.setProperty('--accent',colors[c.id]);b.onclick=()=>showCategory(c.id);return b}));
+    showCategory(categories.some(c=>c.id===active)?active:categories[0].id);
+    $('activity').replaceChildren(...data.activity.map(x=>el('div','event',[new Date(x.hour).toLocaleString('ru-RU'),labels[x.kind]||x.kind,actions[x.action]||x.action,categories.find(c=>c.id===x.category)?.name,'Событий: '+x.hits].filter(Boolean).join(' · '))));
+    if(!data.activity.length)$('activity').textContent='За последние 30 дней событий нет.';
+    $('time').textContent='Обновлено в '+new Date().toLocaleTimeString('ru-RU');$('dashboard').hidden=false;$('login').hidden=true;
+  }catch(e){$('error').textContent=e.message}
+  finally{submit.disabled=$('refresh').disabled=false}
+}
+$('login').onsubmit=e=>{e.preventDefault();load()};$('refresh').onclick=load;
+</script></body></html>
