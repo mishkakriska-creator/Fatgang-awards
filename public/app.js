@@ -189,9 +189,12 @@ for (const n of c.items) {
     refresh();renderBallot();
   };
   inputs.push(check);
-  label.append(check,el('span','',n.name));
+  const [performer, producer] = c.id === 'producer' ? (n.artist || '').split(' · прод. ') : [];
+  const title = producer || n.name;
+  const subtitle = producer ? n.name + ' — ' + performer : n.artist;
+  label.append(check,el('span','',title));
   card.append(art,label);
-  if (n.artist) card.append(el('span','credit',n.artist));
+  if (subtitle) card.append(el('span','credit',subtitle));
   for (const work of n.works || []) {
     const row = el('div','work-row');
     row.append(el('span','',work.name), listenButton({...work,image:n.image}));
