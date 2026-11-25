@@ -42,21 +42,36 @@ function timer(){if(!info)return;let now=Date.now();
   }
   if(!info.start){$('timer').textContent='Скоро начало голосования';return}let target=now<info.start?info.start:info.end;if(now>=info.end){$('timer').textContent='Голосование завершено';displayWinners();return}let ms=Math.max(0,target-now),d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60,s=Math.floor(ms/1000)%60;$('timer').textContent=(now<info.start?'До начала: ':'До конца: ')+d+'д '+[h,m,s].map(x=>String(x).padStart(2,'0')).join(':')}
 const drafts=new Map();
+function nomineeCaption(category, nominee) {
+  const [performer, producer] = category.id === 'producer' ? (nominee.artist || '').split(' · прод. ') : [];
+  return {title: producer || nominee.name, subtitle: producer ? nominee.name + ' — ' + performer : nominee.artist};
+}
 function renderBallot() {
-  $('my-ballot').hidden=!info.user;
-  if(!info.user) return;
-  const rows=info.nominees.map(c=>{
-    const vote=myVotes.find(v=>v.category===c.id);
-    const ids=vote?.choices || [...(drafts.get(c.id)||[])];
-    const choices=ids.map(id=>{
-      const n=c.items.find(item=>item.id===id);
-      return n ? [n.name,n.artist].filter(Boolean).join(' — ') : id;
-    });
-    const row=el('div','ballot-line');
-    row.append(el('dt','',c.name),el('dd','',choices.length ? (vote?'':'До подтверждения · ')+choices.join(' · ') : 'Голос ещё не отправлен'));
-    return row;
-  });
-  $('ballot-list').replaceChildren(...rows);
+  $('my-ballot').hidden = !info.user;
+  if (!info.user) return;
+  const groups = [];
+  for (const c of info.nominees) {
+    const vote = myVotes.find(v => v.category === c.id);
+    const ids = vote?.choices || [...(drafts.get(c.id) || [])];
+    if (!ids.length) continue;
+    const group = el('section', 'ballot-group');
+    const header = el('div', 'ballot-heading');
+    header.append(el('h3', '', c.name), el('small', '', vote ? 'Голос принят' : 'До подтверждения'));
+    const list = el('ul', 'ballot-cards');
+    for (const id of ids) {
+      const nominee = c.items.find(item => item.id === id) || {name:id};
+      const {title, subtitle} = nomineeCaption(c, nominee);
+      const card = el('li', 'ballot-card');
+      const art = el('img');
+      art.alt = ''; art.loading = 'lazy'; art.src = nominee.image || '/logo.webp';
+      const caption = el('div', 'ballot-caption');
+      caption.append(el('strong', '', title));
+      if (subtitle) caption.append(el('small', '', subtitle));
+      card.append(art, caption); list.append(card);
+    }
+    group.append(header, list); groups.push(group);
+  }
+  $('ballot-list').replaceChildren(...(groups.length ? groups : [el('p', 'muted', 'Здесь появятся карточки выбранных номинантов.')]));
 }
 async function init(){info=await api('info');try{localStorage.setItem(deviceStore,info.recovery)}catch{};myVotes=info.user?await api('my-votes'):[];$('account').textContent=info.user?info.user.name:'Войти ↗︎';$('account').title=info.user?'Мои голоса':'Войти';$('login').querySelector('[value=register]').hidden=info.accountBound;renderBallot();renderCategories();timer();if(active){let c=info.nominees.find(x=>x.id===active);if(c)show(c,false)}}
 function renderCategories() {
@@ -189,9 +204,7 @@ for (const n of c.items) {
     refresh();renderBallot();
   };
   inputs.push(check);
-  const [performer, producer] = c.id === 'producer' ? (n.artist || '').split(' · прод. ') : [];
-  const title = producer || n.name;
-  const subtitle = producer ? n.name + ' — ' + performer : n.artist;
+  const {title, subtitle} = nomineeCaption(c, n);
   label.append(check,el('span','',title));
   card.append(art,label);
   if (subtitle) card.append(el('span','credit',subtitle));
