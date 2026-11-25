@@ -1,7 +1,14 @@
 let info=null,active=null,myVotes=[],selection=new Set();const $=id=>document.getElementById(id);
 function el(tag,cls,txt){let x=document.createElement(tag);if(cls)x.className=cls;if(txt!==undefined)x.textContent=txt;return x}
 async function api(path,data){let r=await fetch('/api/'+path,data===undefined?{headers:path==='info'?recoveryHeaders():{}}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(['register','login','vote'].includes(path)?{...data,proof:await humanCheck(path),...(path==='vote'?{fingerprint:browserSignals()}:{})}:data)});let j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(Error(j.error||'Ошибка '+r.status),{status:r.status});return j}
-function timer(){if(!info)return;let now=Date.now();if(!info.start){$('timer').textContent='Скоро начало голосования';return}let target=now<info.start?info.start:info.end;if(now>=info.end){$('timer').textContent='Голосование завершено';return}let ms=Math.max(0,target-now),d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60,s=Math.floor(ms/1000)%60;$('timer').textContent=(now<info.start?'До начала: ':'До конца: ')+d+'д '+[h,m,s].map(x=>String(x).padStart(2,'0')).join(':')}
+function timer(){if(!info)return;let now=Date.now();
+  const open=!!info.start && now>=info.start && now<info.end;
+  if (open!==info.open) {
+    info.open=open;
+    if(!open){drafts.clear();renderBallot()}
+    if(active)show(info.nominees.find(c=>c.id===active),false);
+  }
+  if(!info.start){$('timer').textContent='Скоро начало голосования';return}let target=now<info.start?info.start:info.end;if(now>=info.end){$('timer').textContent='Голосование завершено';return}let ms=Math.max(0,target-now),d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60,s=Math.floor(ms/1000)%60;$('timer').textContent=(now<info.start?'До начала: ':'До конца: ')+d+'д '+[h,m,s].map(x=>String(x).padStart(2,'0')).join(':')}
 const drafts=new Map();
 function renderBallot() {
   $('my-ballot').hidden=!info.user;
@@ -122,9 +129,10 @@ function listenButton(track) {
   return button;
 }
 function show(c,scroll){active=c.id;selection=drafts.get(c.id)||new Set();drafts.set(c.id,selection);renderCategories();let d=$('detail');d.hidden=false;d.dataset.category=c.id;d.replaceChildren(el('h2','',c.name));const saved=myVotes.find(v=>v.category===c.id);if(!c.items.length){d.append(el('p','empty','Номинанты пока не объявлены.'));if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'});return}
+const limit=c.maxChoices;
 const usedHere=info.usedCategories?.includes(c.id);
-const isOpen=()=>Date.now()>=info.start&&Date.now()<info.end&&!!info.start;d.append(el('p','muted',saved?'Твой голос уже принят. Изменить выбор нельзя.':usedHere?'С этого устройства уже голосовали в данной номинации':isOpen()&&!info.user?'Войди в аккаунт, чтобы выбрать номинантов.':isOpen()?'Нажми на карточки до трёх номинантов и подтверди выбор внизу.':'Голосование сейчас закрыто.'));
-let grid=el('div','nominee-grid'),count=el('strong','',''),submit=el('button','primary','Подтвердить голоса'),inputs=[];const refresh=()=>{count.textContent='Выбрано: '+selection.size+' / 3';submit.disabled=!info.user||!!saved||usedHere||!isOpen()||selection.size===0;for(let x of inputs)x.disabled=!info.user||!!saved||usedHere||!isOpen()||(!x.checked&&selection.size>=3)};
+const isOpen=()=>Date.now()>=info.start&&Date.now()<info.end&&!!info.start;d.append(el('p','muted',saved?'Твой голос уже принят. Изменить выбор нельзя.':usedHere?'С этого устройства уже голосовали в данной номинации':isOpen()&&!info.user?'Войди в аккаунт, чтобы выбрать номинантов.':isOpen()?(limit===1?'Выбери один альбом и подтверди выбор внизу.':'Нажми на карточки до трёх номинантов и подтверди выбор внизу.'):'Голосование сейчас закрыто.'));
+let grid=el('div','nominee-grid'),count=el('strong','',''),submit=el('button','primary','Подтвердить голоса'),inputs=[];const refresh=()=>{count.textContent='Выбрано: '+selection.size+' / '+limit;submit.disabled=!info.user||!!saved||usedHere||!isOpen()||selection.size===0;for(let x of inputs)x.disabled=!info.user||!!saved||usedHere||!isOpen()||(!x.checked&&selection.size>=limit)};
 for (const n of c.items) {
   const card = el('article','nominee');
   const art = el('div','nominee-art');
@@ -175,7 +183,7 @@ if(!info.user && isOpen()){
   const loginButton=el('button','primary','Войти для голосования');
   loginButton.onclick=()=>$('auth').showModal();
   d.append(loginButton);
-} else if(info.user && !saved && !usedHere){const actions=el('div','vote-actions');actions.append(count,submit);d.append(actions)}refresh();submit.onclick=async()=>{if(!info.user){$('auth').showModal();return}if(!confirm('Подтвердить выбор? Изменить его будет нельзя.'))return;submit.disabled=true;try{await api('vote',{category:c.id,ids:[...selection]});drafts.delete(c.id);await init()}catch(e){alert(e.message);if(e.status===401||e.status===409){drafts.delete(c.id);await init()}else refresh()}};if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'})}
+} else if(info.user && !saved && !usedHere && isOpen()){const actions=el('div','vote-actions');actions.append(count,submit);d.append(actions)}refresh();submit.onclick=async()=>{if(!info.user){$('auth').showModal();return}if(!confirm('Подтвердить выбор? Изменить его будет нельзя.'))return;submit.disabled=true;try{await api('vote',{category:c.id,ids:[...selection]});drafts.delete(c.id);await init()}catch(e){alert(e.message);if(e.status===401||e.status===409){drafts.delete(c.id);await init()}else refresh()}};if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'})}
 $('account').onclick=()=>{if(info?.user){$('my-ballot').focus();$('my-ballot').scrollIntoView({behavior:'smooth',block:'start'});}else $('auth').showModal();};
 $('close-auth').onclick=()=>$('auth').close();$('login').onsubmit=async e=>{e.preventDefault();$('error').textContent='';try{await api(e.submitter?.value||'login',Object.fromEntries(new FormData(e.target)));e.target.reset();$('auth').close();await init()}catch(e){$('error').textContent=e.message}};
 init().catch(e=>$('timer').textContent=e.message);setInterval(timer,1000);

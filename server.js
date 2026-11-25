@@ -8,7 +8,9 @@ if (production) {
   dbOptions.ssl = {rejectUnauthorized:true};
   if (!process.env.SESSION_SECRET) throw Error('SESSION_SECRET is required');
 }
-const app=express(),pool=new Pool({...dbOptions,connectionString:connection.toString()}), nominees=require('./nominees.json');
+const app=express(),pool=new Pool({...dbOptions,connectionString:connection.toString()}), nominees=require('./nominees.json').map(category => ({
+  ...category, maxChoices: category.id === 'album' ? 1 : 3
+}));
 app.set('trust proxy',1);app.use(express.json({limit:'16kb'}));app.use(express.static('public'));
 pool.on("error", error => console.error("PostgreSQL connection error", error.code));
 const secret = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
@@ -110,7 +112,7 @@ app.post('/api/vote', wrap(async (req, res) => {
   if (!browser) return res.status(403).json({error: 'Для голосования включи cookie и обнови страницу.'});
   const {category, ids} = req.body;
   const list = nominees.find(item => item.id === category);
-  if (!list || !Array.isArray(ids) || ids.length < 1 || ids.length > 3 ||
+  if (!list || !Array.isArray(ids) || ids.length < 1 || ids.length > list.maxChoices ||
       new Set(ids).size !== ids.length || !ids.every(id => list.items.some(item => item.id === id))) {
     return res.sendStatus(400);
   }
@@ -124,6 +126,10 @@ app.post('/api/vote', wrap(async (req, res) => {
   try {
     await client.query('begin');
     if(fp) await client.query('select pg_advisory_xact_lock(hashtextextended($1,0))',[fp]);
+    if (!open()) {
+      await client.query('rollback');
+      return res.status(403).json({error:'Голосование закрыто'});
+    }
     const key=ballotKey(browser,category);
     inserted=await client.query(
       'insert into ballots(user_id,category,choices,browser_key,fingerprint_key) values($1,$2,$3,$4,$5) on conflict do nothing returning user_id',
