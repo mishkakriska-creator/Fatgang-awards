@@ -2,7 +2,24 @@ let info=null,active=null,myVotes=[],selection=new Set();const $=id=>document.ge
 function el(tag,cls,txt){let x=document.createElement(tag);if(cls)x.className=cls;if(txt!==undefined)x.textContent=txt;return x}
 async function api(path,data){let r=await fetch('/api/'+path,data===undefined?{headers:path==='info'?recoveryHeaders():{}}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(['register','login','vote'].includes(path)?{...data,proof:await humanCheck(path),...(path==='vote'?{fingerprint:browserSignals()}:{})}:data)});let j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(Error(j.error||'Ошибка '+r.status),{status:r.status});return j}
 function timer(){if(!info)return;let now=Date.now();if(!info.start){$('timer').textContent='Скоро начало голосования';return}let target=now<info.start?info.start:info.end;if(now>=info.end){$('timer').textContent='Голосование завершено';return}let ms=Math.max(0,target-now),d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60,s=Math.floor(ms/1000)%60;$('timer').textContent=(now<info.start?'До начала: ':'До конца: ')+d+'д '+[h,m,s].map(x=>String(x).padStart(2,'0')).join(':')}
-async function init(){info=await api('info');try{localStorage.setItem(deviceStore,info.recovery)}catch{};myVotes=info.user?await api('my-votes').catch(()=>[]):[];$('account').textContent=info.user?info.user.name+' · Выйти':'Войти ↗︎';renderCategories();timer();if(active){let c=info.nominees.find(x=>x.id===active);if(c)show(c,false)}}
+const drafts=new Map();
+function renderBallot() {
+  $('my-ballot').hidden=!info.user;
+  if(!info.user) return;
+  const rows=info.nominees.map(c=>{
+    const vote=myVotes.find(v=>v.category===c.id);
+    const ids=vote?.choices || [...(drafts.get(c.id)||[])];
+    const choices=ids.map(id=>{
+      const n=c.items.find(item=>item.id===id);
+      return n ? [n.name,n.artist].filter(Boolean).join(' — ') : id;
+    });
+    const row=el('div','ballot-line');
+    row.append(el('dt','',c.name),el('dd','',choices.length ? (vote?'':'До подтверждения · ')+choices.join(' · ') : 'Голос ещё не отправлен'));
+    return row;
+  });
+  $('ballot-list').replaceChildren(...rows);
+}
+async function init(){info=await api('info');try{localStorage.setItem(deviceStore,info.recovery)}catch{};myVotes=info.user?await api('my-votes'):[];$('account').textContent=info.user?info.user.name:'Войти ↗︎';$('account').title=info.user?'Мои голоса':'Войти';$('login').querySelector('[value=register]').hidden=info.accountBound;renderBallot();renderCategories();timer();if(active){let c=info.nominees.find(x=>x.id===active);if(c)show(c,false)}}
 function renderCategories() {
   const buttons = info.nominees.map(category => {
     const button = el('button', 'category');
@@ -30,7 +47,6 @@ function renderCategories() {
         $('detail').hidden = true;
         renderCategories();
       } else {
-        selection.clear();
         show(category, true);
       }
       Array.from($('categories').children)
@@ -105,9 +121,9 @@ function listenButton(track) {
   button.onclick = () => playTrack(track);
   return button;
 }
-function show(c,scroll){active=c.id;renderCategories();let d=$('detail');d.hidden=false;d.dataset.category=c.id;d.replaceChildren(el('h2','',c.name));const saved=myVotes.find(v=>v.category===c.id);if(!c.items.length){d.append(el('p','empty','Номинанты пока не объявлены.'));if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'});return}
+function show(c,scroll){active=c.id;selection=drafts.get(c.id)||new Set();drafts.set(c.id,selection);renderCategories();let d=$('detail');d.hidden=false;d.dataset.category=c.id;d.replaceChildren(el('h2','',c.name));const saved=myVotes.find(v=>v.category===c.id);if(!c.items.length){d.append(el('p','empty','Номинанты пока не объявлены.'));if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'});return}
 const usedHere=info.usedCategories?.includes(c.id);
-const isOpen=()=>Date.now()>=info.start&&Date.now()<info.end&&!!info.start;d.append(el('p','muted',saved?'Твой голос уже принят. Изменить выбор нельзя.':usedHere?'С этого устройства уже голосовали в данной номинации':isOpen()&&!info.user?'Войди в аккаунт, чтобы выбрать номинантов.':isOpen()?'Выбери до трёх номинантов.':'Голосование сейчас закрыто.'));
+const isOpen=()=>Date.now()>=info.start&&Date.now()<info.end&&!!info.start;d.append(el('p','muted',saved?'Твой голос уже принят. Изменить выбор нельзя.':usedHere?'С этого устройства уже голосовали в данной номинации':isOpen()&&!info.user?'Войди в аккаунт, чтобы выбрать номинантов.':isOpen()?'Нажми на карточки до трёх номинантов и подтверди выбор внизу.':'Голосование сейчас закрыто.'));
 let grid=el('div','nominee-grid'),count=el('strong','',''),submit=el('button','primary','Подтвердить голоса'),inputs=[];const refresh=()=>{count.textContent='Выбрано: '+selection.size+' / 3';submit.disabled=!info.user||!!saved||usedHere||!isOpen()||selection.size===0;for(let x of inputs)x.disabled=!info.user||!!saved||usedHere||!isOpen()||(!x.checked&&selection.size>=3)};
 for (const n of c.items) {
   const card = el('article','nominee');
@@ -124,11 +140,13 @@ for (const n of c.items) {
   const check = el('input');
   check.type = 'checkbox';
   check.checked = saved ? saved.choices.includes(n.id) : selection.has(n.id);
-  check.hidden = !saved && (!info.user || !isOpen() || usedHere);
+  card.addEventListener('click',event=>{
+    if(!event.target.closest('label,input,a,button') && !check.disabled) check.click();
+  });
   check.onchange = () => {
     if (check.checked) selection.add(n.id);
     else selection.delete(n.id);
-    refresh();
+    refresh();renderBallot();
   };
   inputs.push(check);
   label.append(check,el('span','',n.name));
@@ -140,7 +158,10 @@ for (const n of c.items) {
     card.append(row);
   }
   if(n.url) {
-    const link = el('a','album-link',c.id==='artist'?'Профиль в SoundCloud ↗':'Слушать на SoundCloud ↗');
+    const link = el('a','album-link',c.id==='artist'?'Профиль в SoundCloud':'Слушать на SoundCloud');
+    const icon=el('img','sc-icon');
+    icon.src='/soundcloud.svg';icon.alt='';
+    link.append(' ',icon);
     link.href = n.url;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
@@ -154,8 +175,8 @@ if(!info.user && isOpen()){
   const loginButton=el('button','primary','Войти для голосования');
   loginButton.onclick=()=>$('auth').showModal();
   d.append(loginButton);
-} else if(info.user && !saved && !usedHere){const actions=el('div','vote-actions');actions.append(count,submit);d.append(actions)}refresh();submit.onclick=async()=>{if(!info.user){$('auth').showModal();return}if(!confirm('Подтвердить выбор? Изменить его будет нельзя.'))return;submit.disabled=true;try{await api('vote',{category:c.id,ids:[...selection]});selection.clear();await init()}catch(e){alert(e.message);if(e.status===401||e.status===409){selection.clear();await init()}else refresh()}};if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'})}
-$('account').onclick=async()=>{if(info?.user){if(confirm('Выйти из аккаунта?')){await api('logout',{});selection.clear();await init()}}else $('auth').showModal()};
+} else if(info.user && !saved && !usedHere){const actions=el('div','vote-actions');actions.append(count,submit);d.append(actions)}refresh();submit.onclick=async()=>{if(!info.user){$('auth').showModal();return}if(!confirm('Подтвердить выбор? Изменить его будет нельзя.'))return;submit.disabled=true;try{await api('vote',{category:c.id,ids:[...selection]});drafts.delete(c.id);await init()}catch(e){alert(e.message);if(e.status===401||e.status===409){drafts.delete(c.id);await init()}else refresh()}};if(scroll)d.scrollIntoView({behavior:'smooth',block:'start'})}
+$('account').onclick=()=>{if(info?.user){$('my-ballot').focus();$('my-ballot').scrollIntoView({behavior:'smooth',block:'start'});}else $('auth').showModal();};
 $('close-auth').onclick=()=>$('auth').close();$('login').onsubmit=async e=>{e.preventDefault();$('error').textContent='';try{await api(e.submitter?.value||'login',Object.fromEntries(new FormData(e.target)));e.target.reset();$('auth').close();await init()}catch(e){$('error').textContent=e.message}};
 init().catch(e=>$('timer').textContent=e.message);setInterval(timer,1000);
 // Remove only connected dark background from the existing logo, preserving lettering.

@@ -146,16 +146,14 @@
         "name": "hillclimb!",
         "artist": "лунный маг",
         "image": "/media/moonmage-hillclimb.jpg",
-        "audio": "/media/moonmage-hillclimb.mp3",
-        "url": "https://soundcloud.com/moonmagee/hillclimb"
+        "audio": "/media/moonmage-hillclimb.mp3"
       },
       {
         "id": "moonmage-letnie-vayby-cover",
         "name": "летние вайбы",
         "artist": "deltaaa, qu1ckmeow & лунный маг",
         "image": "/media/moonmage-letnie-vayby.jpg",
-        "audio": "/media/moonmage-letnie-vayby.mp3",
-        "url": "https://soundcloud.com/qu1ckmeowkich/leto"
+        "audio": "/media/moonmage-letnie-vayby.mp3"
       },
       {
         "id": "starstrike-b0occ-cover",

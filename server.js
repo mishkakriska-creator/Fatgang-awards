@@ -36,22 +36,73 @@ app.use('/api', (req,res,next) => {
   if(req.method==='POST') return wrap(guard.limit)(req,res,next);
   next();
 });
+// Adopt existing signed-in sessions before serving any account operation.
+app.use('/api',wrap(async(req,res,next)=>{
+  if(!req.session.user) return next();
+  const device=guard.device(req,res);
+  const {id}=device;
+  const key=ballotKey(id,'account');
+  const result=await pool.query('select user_id from award_device_accounts where device_key=$1',[key]);
+  let owner=result.rows[0]?.user_id;
+  if(owner===undefined) {
+    await pool.query('insert into award_device_accounts values($1,$2) on conflict do nothing',[key,req.session.user.id]);
+    owner=(await pool.query('select user_id from award_device_accounts where device_key=$1',[key])).rows[0].user_id;
+  }
+  if(owner!==req.session.user.id) delete req.session.user;
+  req.awardDevice=device;
+  next();
+}));
 app.post('/api/challenge', guard.challenge);
 app.post(['/api/login','/api/register'],wrap(guard.verify));
 app.get('/api/info', wrap(async (req, res) => {
-  const {id:browser,recovery} = guard.device(req,res);
+  const {id:browser,recovery} = req.awardDevice || guard.device(req,res);
   let usedCategories = [];
   if (req.session.user) {
     const keys = nominees.map(category => ballotKey(browser, category.id));
     const result = await pool.query('select category from ballots where browser_key = any($1::text[])', [keys]);
     usedCategories = result.rows.map(row => row.category);
   }
-  res.json({nominees, recovery, start: Number.isFinite(start) ? start : null,
+  const accountBound=!!req.session.user || !!(await pool.query('select 1 from award_device_accounts where device_key=$1',[ballotKey(browser,'account')])).rowCount;
+  res.json({nominees, recovery, accountBound, start: Number.isFinite(start) ? start : null,
     end: Number.isFinite(end) ? end : null, open: open(), user: req.session.user || null, usedCategories});
 }));
-app.post('/api/register',wrap(async(q,s)=>{let {name,password}=q.body;if(typeof name!=='string'||! /^[\p{L}\p{N}_-]{3,32}$/u.test(name)||typeof password!=='string'||password.length<8||password.length>72)return s.status(400).json({error:'Ник 3–32 символа, пароль 8–72'});let r=await pool.query('insert into users(name,hash) values($1,$2) on conflict do nothing returning id',[name.toLowerCase(),await bcrypt.hash(password,12)]);if(!r.rowCount)return s.status(409).json({error:'Ник занят'});q.session.user={id:r.rows[0].id,name};s.json({ok:true})}));
-app.post('/api/login',wrap(async(q,s)=>{let {name,password}=q.body;if(typeof name!=='string'||typeof password!=='string')return s.sendStatus(400);let r=await pool.query('select * from users where name=$1',[name.toLowerCase()]);if(!r.rowCount||!await bcrypt.compare(password,r.rows[0].hash))return s.status(401).json({error:'Неверный логин или пароль'});q.session.user={id:r.rows[0].id,name};s.json({ok:true})}));
-app.post('/api/logout',(q,s)=>q.session.destroy(()=>s.json({ok:true})));
+const lockedMessage='Этот браузер уже привязан к аккаунту. Войди под прежним ником.';
+async function authenticate(req,res) {
+  const {name,password}=req.body;
+  const registering=req.path==='/api/register';
+  const id=browserId(req);
+  if (!id) return res.status(400).json({error:'Обнови страницу и разреши cookie.'});
+  if (req.session.user) return res.status(409).json({error:lockedMessage});
+  if (typeof name!=='string'||typeof password!=='string') return res.sendStatus(400);
+  if (registering && (!/^[\p{L}\p{N}_-]{3,32}$/u.test(name)||password.length<8||password.length>72))
+    return res.status(400).json({error:'Ник 3–32 символа, пароль 8–72'});
+  const key=ballotKey(id,'account');
+  const db=await pool.connect();
+  try {
+    await db.query('begin');
+    await db.query('select pg_advisory_xact_lock(hashtextextended($1,0))',[key]);
+    const bound=(await db.query('select user_id from award_device_accounts where device_key=$1',[key])).rows[0];
+    let user,error,status;
+    if(registering && !bound) {
+      user=(await db.query('insert into users(name,hash) values($1,$2) on conflict do nothing returning id',[name.toLowerCase(),await bcrypt.hash(password,12)])).rows[0];
+      if(!user){error='Ник занят';status=409;}
+    } else if(registering) {
+      error=lockedMessage;status=409;
+    } else {
+      user=(await db.query('select id,hash from users where name=$1',[name.toLowerCase()])).rows[0];
+      if(!user||!await bcrypt.compare(password,user.hash)){error='Неверный логин или пароль';status=401;}
+      else if(bound && bound.user_id!==user.id){error=lockedMessage;status=409;}
+    }
+    if(error){await db.query('rollback');return res.status(status).json({error});}
+    if(!bound) await db.query('insert into award_device_accounts(device_key,user_id) values($1,$2)',[key,user.id]);
+    await db.query('commit');
+    req.session.user={id:user.id,name};
+    res.json({ok:true});
+  } catch(error) {await db.query('rollback');throw error;}
+  finally {db.release();}
+}
+app.post(['/api/register','/api/login'],wrap(authenticate));
+app.post('/api/logout',(req,res)=>res.status(403).json({error:'Аккаунт закреплён за этим браузером.'}));
 app.post('/api/vote', wrap(async (req, res) => {
   if (!req.session.user) return res.status(401).json({error: 'Войди в аккаунт, чтобы голосовать.'});
   if (!open()) return res.status(403).json({error: 'Голосование закрыто'});

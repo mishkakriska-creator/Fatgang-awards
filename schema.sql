@@ -15,10 +15,11 @@ create index if not exists ballots_fp on ballots(fingerprint_key) where fingerpr
 create index if not exists "IDX_session_expire" on session(expire);
 create table if not exists award_limits(bucket text primary key,until_at timestamptz not null,hits integer not null);
 create table if not exists award_activity(hour timestamptz not null,kind text not null,action text not null,category text not null,hits bigint not null,primary key(hour,kind,action,category));
+create table if not exists award_device_accounts(device_key text primary key,user_id integer not null references users(id));
 do $$
 declare t text; r text;
 begin
- foreach t in array array['users','ballots','session','award_limits','award_activity'] loop
+ foreach t in array array['users','ballots','session','award_limits','award_activity','award_device_accounts'] loop
   execute format('alter table public.%I enable row level security',t);
   execute format('revoke all on public.%I from public',t);
   for r in select rolname from pg_roles where rolname in ('anon','authenticated') loop
