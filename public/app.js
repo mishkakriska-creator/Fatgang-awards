@@ -1,6 +1,38 @@
 let info=null,active=null,myVotes=[],selection=new Set();const $=id=>document.getElementById(id);
 function el(tag,cls,txt){let x=document.createElement(tag);if(cls)x.className=cls;if(txt!==undefined)x.textContent=txt;return x}
 async function api(path,data){let r=await fetch('/api/'+path,data===undefined?{headers:path==='info'?recoveryHeaders():{}}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(['register','login','vote'].includes(path)?{...data,proof:await humanCheck(path),...(path==='vote'?{fingerprint:browserSignals()}:{})}:data)});let j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(Error(j.error||'Ошибка '+r.status),{status:r.status});return j}
+let loadingWinners = false;
+let retryWinnersAt = 0;
+async function displayWinners() {
+  if (!$('winners').hidden || loadingWinners || Date.now() < retryWinnersAt) return;
+  loadingWinners = true;
+  try {
+    const results = await api('winners');
+    const cards = results.map(({category, winners}) => {
+      const c = info.nominees.find(item => item.id === category);
+      const card = el('article', 'winner-card');
+      card.dataset.category = category;
+      card.append(el('h3', '', c.name));
+      if (!winners.length) card.append(el('p', '', 'Голосов нет'));
+      if (winners.length > 1) card.append(el('p', '', 'Разделили первое место'));
+      for (const id of winners) {
+        const n = c.items.find(item => item.id === id);
+        const row = el('div', 'winner-row');
+        const image = el('img');
+        image.alt = ''; image.src = n?.image || '/logo.webp';
+        const credit = el('div');
+        credit.append(el('strong', '', n?.name || id));
+        if (n?.artist) credit.append(el('small', '', n.artist));
+        row.append(image, credit); card.append(row);
+      }
+      return card;
+    });
+    $('winner-list').replaceChildren(...cards);
+    $('winners').hidden = false;
+  } catch {
+    retryWinnersAt = Date.now() + 10000;
+  } finally { loadingWinners = false; }
+}
 function timer(){if(!info)return;let now=Date.now();
   const open=!!info.start && now>=info.start && now<info.end;
   if (open!==info.open) {
@@ -8,7 +40,7 @@ function timer(){if(!info)return;let now=Date.now();
     if(!open){drafts.clear();renderBallot()}
     if(active)show(info.nominees.find(c=>c.id===active),false);
   }
-  if(!info.start){$('timer').textContent='Скоро начало голосования';return}let target=now<info.start?info.start:info.end;if(now>=info.end){$('timer').textContent='Голосование завершено';return}let ms=Math.max(0,target-now),d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60,s=Math.floor(ms/1000)%60;$('timer').textContent=(now<info.start?'До начала: ':'До конца: ')+d+'д '+[h,m,s].map(x=>String(x).padStart(2,'0')).join(':')}
+  if(!info.start){$('timer').textContent='Скоро начало голосования';return}let target=now<info.start?info.start:info.end;if(now>=info.end){$('timer').textContent='Голосование завершено';displayWinners();return}let ms=Math.max(0,target-now),d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60,s=Math.floor(ms/1000)%60;$('timer').textContent=(now<info.start?'До начала: ':'До конца: ')+d+'д '+[h,m,s].map(x=>String(x).padStart(2,'0')).join(':')}
 const drafts=new Map();
 function renderBallot() {
   $('my-ballot').hidden=!info.user;

@@ -126,6 +126,7 @@ app.post('/api/vote', wrap(async (req, res) => {
   try {
     await client.query('begin');
     if(fp) await client.query('select pg_advisory_xact_lock(hashtextextended($1,0))',[fp]);
+    await client.query('lock table ballots in row exclusive mode');
     if (!open()) {
       await client.query('rollback');
       return res.status(403).json({error:'Голосование закрыто'});
@@ -146,6 +147,36 @@ app.post('/api/vote', wrap(async (req, res) => {
   } finally {client.release();}
   if(!inserted.rowCount) return res.status(409).json({error:duplicateMessage});
   res.json({ok:true});
+}));
+// Wait for ballots admitted before the deadline to commit before publishing totals.
+async function readWinners() {
+  const db = await pool.connect();
+  try {
+    await db.query('begin');
+    await db.query('lock table ballots in share mode');
+    const {rows} = await db.query(`
+      with totals as (
+        select category, nominee, count(*) as votes
+        from ballots cross join lateral jsonb_array_elements_text(choices) as picks(nominee)
+        group by category, nominee
+      )
+      select category, nominee from (
+        select totals.*, rank() over (partition by category order by votes desc) as place from totals
+      ) ranked where place = 1 order by category, nominee`);
+    await db.query('commit');
+    return nominees.map(c => ({
+      category: c.id, winners: rows.filter(row => row.category === c.id).map(row => row.nominee)
+    }));
+  } catch (error) {
+    await db.query('rollback');
+    throw error;
+  } finally { db.release(); }
+}
+let finalResults;
+app.get('/api/winners', wrap(async (req, res) => {
+  if (!Number.isFinite(end) || Date.now() < end) return res.status(403).json({error:'Итоги ещё не опубликованы'});
+  if (!finalResults) finalResults = readWinners().catch(error => { finalResults = null; throw error; });
+  res.json(await finalResults);
 }));
 app.get('/api/my-votes',wrap(async(q,s)=>{if(!q.session.user)return s.sendStatus(401);s.json((await pool.query('select category,choices from ballots where user_id=$1',[q.session.user.id])).rows)}));
 app.post('/api/admin',wrap(async(q,s)=>{if(!process.env.ADMIN_PASSWORD||q.body.password!==process.env.ADMIN_PASSWORD){await guard.log('admin_denied','admin');return s.sendStatus(403)}s.json({activity:(await pool.query('select * from award_activity order by hour desc,hits desc limit 200')).rows,users:(await pool.query('select count(*) from users')).rows[0].count,results:(await pool.query('select category,jsonb_array_elements_text(choices) as nominee,count(*) from ballots group by 1,2 order by 3 desc')).rows})}));
